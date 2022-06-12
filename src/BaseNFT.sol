@@ -7,6 +7,9 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
+error ZeroMaxSupply();
+error ReservedExceedsMaxSupply();
+error DividentsShareBPTooHigh();
 error MintPriceNotPaid();
 error MaxSupplyReached();
 error EmptyURI();
@@ -22,6 +25,7 @@ contract BaseNFT is ERC721, ERC721Enumerable, Ownable {
     uint256 private _raritiesSum;
 
     uint256 public immutable maxSupply;
+    uint256 public immutable reservedSupply;
     uint256 public immutable mintPrice;
     address public immutable dividendsTreasury;
     address public immutable projectTreasury;
@@ -34,17 +38,35 @@ contract BaseNFT is ERC721, ERC721Enumerable, Ownable {
         string memory _name,
         string memory _symbol,
         uint256 _maxSupply,
+        uint256 _reservedSupply,
         uint256 _mintPrice,
         address _dividendsTreasury,
         address _projectTreasury,
         uint256 _dividendsShareBasisPoints
     ) ERC721(_name, _symbol) {
+        if (_maxSupply == 0) {
+            revert ZeroMaxSupply();
+        }
+
+        if (_reservedSupply > _maxSupply) {
+            revert ReservedExceedsMaxSupply();
+        }
+
+        if (_dividendsShareBasisPoints > 1e4) {
+            revert DividentsShareBPTooHigh();
+        }
+
         maxSupply = _maxSupply;
+        reservedSupply = _reservedSupply;
         mintPrice = _mintPrice;
         dividendsTreasury = _dividendsTreasury;
         projectTreasury = _projectTreasury;
         dividendsSharePerMint = (_mintPrice * _dividendsShareBasisPoints) / 1e4;
         projectSharePerMint = mintPrice - dividendsSharePerMint;
+
+        for (uint256 i = 0; i < _reservedSupply; i++) {
+            _mintTo(projectTreasury);
+        }
     }
 
     function _mintTo(address recipient) internal {
