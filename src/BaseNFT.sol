@@ -82,8 +82,8 @@ contract BaseNFT is ERC721, ERC721Enumerable, Ownable {
     }
 
     function mintBatchTo(address recipient, uint256 amount) public payable {
-        if (amount == 0) {
-            revert InvalidAmount(0);
+        if (amount == 0 || amount > maxSupply) {
+            revert InvalidAmount(amount);
         }
 
         uint256 totalMintPrice = mintPrice * amount;
