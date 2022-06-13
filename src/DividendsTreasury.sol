@@ -10,8 +10,8 @@ error ZeroBlockTime();
 error NotInitialized();
 error AlreadyInitialized();
 error LastRoundNotClosed();
-error LastRoundAlreadyClosed();
-error ZeroDividends();
+error LastRoundNotOpen();
+error ZeroDividendsAmount();
 error DividendsAmountExceedsBalance();
 error NullDuration();
 error WithdrawalFailed();
@@ -49,15 +49,17 @@ contract DividendsTreasury is Ownable {
     }
 
     modifier whenLastRoundIsClosed() {
-        if (dividendsRounds[dividendsRounds.length - 1].endBlock > block.number) {
+        uint256 pastRoundsCount = dividendsRounds.length;
+        if (pastRoundsCount > 0 && dividendsRounds[pastRoundsCount - 1].endBlock > block.number) {
             revert LastRoundNotClosed();
         }
         _;
     }
 
     modifier whenLastRoundIsOpen() {
-        if (dividendsRounds[dividendsRounds.length - 1].endBlock <= block.number) {
-            revert LastRoundAlreadyClosed();
+        uint256 pastRoundsCount = dividendsRounds.length;
+        if (pastRoundsCount == 0 || dividendsRounds[pastRoundsCount - 1].endBlock <= block.number) {
+            revert LastRoundNotOpen();
         }
         _;
     }
@@ -88,7 +90,7 @@ contract DividendsTreasury is Ownable {
         whenLastRoundIsClosed
     {
         if (amount == 0) {
-            revert ZeroDividends();
+            revert ZeroDividendsAmount();
         }
 
         if (amount > treasuryBalance) {
