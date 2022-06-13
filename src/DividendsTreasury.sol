@@ -153,7 +153,6 @@ contract DividendsTreasury is Ownable {
         }
 
         uint256 dividends = calculateDividendsForToken(tokenId, roundIndex);
-        treasuryBalance -= dividends;
         dividendsRounds[roundIndex].totalClaimed += dividends;
         dividendsRounds[roundIndex].hasClaimedForToken[tokenId] = true;
         dividendsRounds[roundIndex].claimedAmountForToken[tokenId] = dividends;
