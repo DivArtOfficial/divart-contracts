@@ -134,6 +134,10 @@ contract BaseNFT is ERC721, ERC721Enumerable, Ownable {
         }
 
         uint256 excessPayment = msg.value - totalMintPrice;
+        if (excessPayment == 0) {
+            return;
+        }
+
         (success, ) = address(msg.sender).call{ value: excessPayment }("");
         if (!success) {
             revert TransferFailed(msg.sender);
