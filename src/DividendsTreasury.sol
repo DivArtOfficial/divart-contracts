@@ -182,8 +182,8 @@ contract DividendsTreasury is Ownable {
         }
     }
 
-    function terminateDividendsRound(uint256 roundIndex) public onlyOwner whenLastRoundIsOpen {
-        dividendsRounds[roundIndex].endBlock = block.number;
+    function terminateDividendsRound() public onlyOwner whenLastRoundIsOpen {
+        dividendsRounds[dividendsRounds.length - 1].endBlock = block.number;
     }
 
     function withdraw(uint256 amount) public onlyOwner whenInitialized {
