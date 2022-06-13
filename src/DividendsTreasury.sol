@@ -15,6 +15,7 @@ error ZeroDividendsAmount();
 error DividendsAmountExceedsBalance();
 error NullDuration();
 error WithdrawalFailed();
+error WithdrawalAmountExceedsBalance();
 error DividendsAlreadyClaimedForToken(uint256 tokenId);
 error TokenNotOwnedByAccount();
 
@@ -26,12 +27,13 @@ contract DividendsTreasury is Ownable {
         uint256 totalClaimed;
         uint256 startBlock;
         uint256 endBlock;
-        mapping(uint256 => bool) hasClaimedForToken;
-        mapping(uint256 => uint256) claimedAmountForToken;
     }
 
-    DividendsRound[] public dividendsRounds;
+    DividendsRound[] private _dividendsRounds;
+
     uint256 public treasuryBalance;
+    mapping(uint256 => mapping(uint256 => bool)) public hasClaimedForRoundForToken;
+    mapping(uint256 => mapping(uint256 => uint256)) public claimedAmountForRoundForToken;
 
     address public immutable projectTreasury;
     uint256 public immutable blockTimeInSeconds;
@@ -49,16 +51,16 @@ contract DividendsTreasury is Ownable {
     }
 
     modifier whenLastRoundIsClosed() {
-        uint256 pastRoundsCount = dividendsRounds.length;
-        if (pastRoundsCount > 0 && dividendsRounds[pastRoundsCount - 1].endBlock > block.number) {
+        uint256 pastRoundsCount = _dividendsRounds.length;
+        if (pastRoundsCount > 0 && _dividendsRounds[pastRoundsCount - 1].endBlock > block.number) {
             revert LastRoundNotClosed();
         }
         _;
     }
 
     modifier whenLastRoundIsOpen() {
-        uint256 pastRoundsCount = dividendsRounds.length;
-        if (pastRoundsCount == 0 || dividendsRounds[pastRoundsCount - 1].endBlock <= block.number) {
+        uint256 pastRoundsCount = _dividendsRounds.length;
+        if (pastRoundsCount == 0 || _dividendsRounds[pastRoundsCount - 1].endBlock <= block.number) {
             revert LastRoundNotOpen();
         }
         _;
@@ -83,6 +85,18 @@ contract DividendsTreasury is Ownable {
         rarityOracle = _rarityOracle;
     }
 
+    function getDividendsRound(uint256 roundIndex) public view returns (DividendsRound memory) {
+        return _dividendsRounds[roundIndex];
+    }
+
+    function getDividendsRoundsCount() public view returns (uint256) {
+        return _dividendsRounds.length;
+    }
+
+    function getDividendsRounds() public view returns (DividendsRound[] memory) {
+        return _dividendsRounds;
+    }
+
     function issueDividends(uint256 amount, uint256 durationInSeconds)
         public
         onlyOwner
@@ -103,7 +117,7 @@ contract DividendsTreasury is Ownable {
 
         treasuryBalance -= amount;
 
-        DividendsRound storage newRound = dividendsRounds.push();
+        DividendsRound storage newRound = _dividendsRounds.push();
         newRound.totalClaimable = amount;
         newRound.startBlock = block.number;
         newRound.endBlock = block.number + durationInSeconds / blockTimeInSeconds;
@@ -128,7 +142,7 @@ contract DividendsTreasury is Ownable {
             uint256 tokenId = tokens[i];
             totalDividends += rarityOracle.rarityOf(tokenId);
         }
-        totalDividends *= dividendsRounds[roundIndex].totalClaimable;
+        totalDividends *= _dividendsRounds[roundIndex].totalClaimable;
         totalDividends /= rarityOracle.raritiesSum();
 
         return totalDividends;
@@ -136,15 +150,15 @@ contract DividendsTreasury is Ownable {
 
     function calculateDividendsForToken(uint256 tokenId, uint256 roundIndex) public view returns (uint256) {
         uint256 totalDividends = rarityOracle.rarityOf(tokenId);
-        totalDividends *= dividendsRounds[roundIndex].totalClaimable;
+        totalDividends *= _dividendsRounds[roundIndex].totalClaimable;
         totalDividends /= rarityOracle.raritiesSum();
 
         return totalDividends;
     }
 
     function claimDividendsForToken(uint256 tokenId) public whenInitialized whenLastRoundIsOpen {
-        uint256 roundIndex = dividendsRounds.length - 1;
-        if (dividendsRounds[roundIndex].hasClaimedForToken[tokenId]) {
+        uint256 roundIndex = _dividendsRounds.length - 1;
+        if (hasClaimedForRoundForToken[roundIndex][tokenId]) {
             revert DividendsAlreadyClaimedForToken(tokenId);
         }
 
@@ -153,12 +167,12 @@ contract DividendsTreasury is Ownable {
         }
 
         uint256 dividends = calculateDividendsForToken(tokenId, roundIndex);
-        dividendsRounds[roundIndex].totalClaimed += dividends;
-        dividendsRounds[roundIndex].hasClaimedForToken[tokenId] = true;
-        dividendsRounds[roundIndex].claimedAmountForToken[tokenId] = dividends;
+        _dividendsRounds[roundIndex].totalClaimed += dividends;
+        hasClaimedForRoundForToken[roundIndex][tokenId] = true;
+        claimedAmountForRoundForToken[roundIndex][tokenId] = dividends;
 
-        if (dividendsRounds[roundIndex].totalClaimed == dividendsRounds[roundIndex].totalClaimable) {
-            dividendsRounds[roundIndex].endBlock = block.number;
+        if (_dividendsRounds[roundIndex].totalClaimed == _dividendsRounds[roundIndex].totalClaimable) {
+            _dividendsRounds[roundIndex].endBlock = block.number;
         }
 
         (bool success, ) = msg.sender.call{ value: dividends }("");
@@ -170,12 +184,12 @@ contract DividendsTreasury is Ownable {
     }
 
     function claimDividends() public whenInitialized whenLastRoundIsOpen {
-        uint256 roundIndex = dividendsRounds.length - 1;
+        uint256 roundIndex = _dividendsRounds.length - 1;
         uint256[] memory tokens = getAccountTokens(msg.sender);
 
         for (uint256 i = 0; i < tokens.length; i++) {
             uint256 tokenId = tokens[i];
-            if (dividendsRounds[roundIndex].hasClaimedForToken[tokenId]) {
+            if (hasClaimedForRoundForToken[roundIndex][tokenId]) {
                 continue;
             }
             claimDividendsForToken(tokenId);
@@ -183,12 +197,12 @@ contract DividendsTreasury is Ownable {
     }
 
     function terminateDividendsRound() public onlyOwner whenLastRoundIsOpen {
-        dividendsRounds[dividendsRounds.length - 1].endBlock = block.number;
+        _dividendsRounds[_dividendsRounds.length - 1].endBlock = block.number;
     }
 
     function withdraw(uint256 amount) public onlyOwner whenInitialized {
         if (amount > treasuryBalance) {
-            revert DividendsAmountExceedsBalance();
+            revert WithdrawalAmountExceedsBalance();
         }
 
         treasuryBalance -= amount;
