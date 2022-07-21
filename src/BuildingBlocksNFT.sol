@@ -3,11 +3,14 @@ pragma solidity 0.8.14;
 
 import { BaseNFT } from "./BaseNFT.sol";
 import { RarityOracle } from "./interfaces/RarityOracle.sol";
+import { PaymentSplitter } from "./PaymentSplitter.sol";
 
 error RaritiesLengthMismatch();
 error NonExistentTokenId(uint256 tokenId);
 
 contract BuildingBlocksNFT is BaseNFT, RarityOracle {
+    PaymentSplitter public paymentSplitter;
+
     uint256[] private _rarities;
     uint256 private _raritiesSum;
 
@@ -19,7 +22,10 @@ contract BuildingBlocksNFT is BaseNFT, RarityOracle {
         uint256 _mintPrice,
         address _dividendsTreasury,
         address _projectTreasury,
-        uint256 _dividendsShareBasisPoints
+        uint256 _dividendsShareBasisPoints,
+        uint96 _royaltyBasisPoints,
+        uint256 _dividendsRoyaltyShares,
+        uint256 _projectRoyaltyShares
     )
         BaseNFT(
             _name,
@@ -31,7 +37,19 @@ contract BuildingBlocksNFT is BaseNFT, RarityOracle {
             _projectTreasury,
             _dividendsShareBasisPoints
         )
-    {}
+    {
+        address[] memory _payees = new address[](2);
+        uint256[] memory _shares = new uint256[](2);
+
+        _payees[0] = _dividendsTreasury;
+        _shares[0] = _dividendsRoyaltyShares;
+
+        _payees[1] = _projectTreasury;
+        _shares[1] = _projectRoyaltyShares;
+
+        paymentSplitter = new PaymentSplitter(_payees, _shares);
+        super._setDefaultRoyalty(address(paymentSplitter), _royaltyBasisPoints);
+    }
 
     function revealRarities(uint256[] calldata rarities) public onlyOwner {
         if (rarities.length != maxSupply) {

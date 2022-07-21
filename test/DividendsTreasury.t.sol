@@ -11,6 +11,9 @@ contract DividendsTreasuryTest is Test {
     uint256 MINTABLE_SUPPLY = MAX_SUPPLY - RESERVED_SUPPLY;
     uint256 MINT_PRICE = 0.08 ether;
     uint256 DIVIDENDS_SHARE_BP = 1e3;
+    uint96 ROYALTY_BP = 2e3;
+    uint256 DIVIDENDS_ROYALTY_SHARES = 8;
+    uint256 PROJECT_ROYALTY_SHARES = 2;
     uint256 BLOCK_TIME = 3;
 
     address projectTreasury = address(1);
@@ -38,7 +41,10 @@ contract DividendsTreasuryTest is Test {
             MINT_PRICE,
             address(dividendsTreasury),
             projectTreasury,
-            DIVIDENDS_SHARE_BP
+            DIVIDENDS_SHARE_BP,
+            ROYALTY_BP,
+            DIVIDENDS_ROYALTY_SHARES,
+            PROJECT_ROYALTY_SHARES
         );
 
         dividendsTreasury.initialize((address(buildingBlocksNFT)), buildingBlocksNFT);

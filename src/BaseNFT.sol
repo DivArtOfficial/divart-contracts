@@ -3,6 +3,7 @@ pragma solidity 0.8.14;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+import "@openzeppelin/contracts/token/common/ERC2981.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
@@ -17,7 +18,7 @@ error TransferFailed(address recipient);
 error InvalidAmount(uint256 amount);
 error NonExistentTokenId(uint256 tokenId);
 
-contract BaseNFT is ERC721, ERC721Enumerable, Ownable {
+contract BaseNFT is ERC721Enumerable, ERC2981, Ownable {
     using Counters for Counters.Counter;
 
     Counters.Counter private _tokenIdCounter;
@@ -162,11 +163,11 @@ contract BaseNFT is ERC721, ERC721Enumerable, Ownable {
         address from,
         address to,
         uint256 tokenId
-    ) internal override(ERC721, ERC721Enumerable) {
+    ) internal override(ERC721Enumerable) {
         super._beforeTokenTransfer(from, to, tokenId);
     }
 
-    function supportsInterface(bytes4 interfaceId) public view override(ERC721, ERC721Enumerable) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view override(ERC721Enumerable, ERC2981) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 }
