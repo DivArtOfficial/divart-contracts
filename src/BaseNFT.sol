@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity 0.8.14;
 
+import "./Whitelistable.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/token/common/ERC2981.sol";
@@ -19,7 +20,7 @@ error TransferFailed(address recipient);
 error InvalidAmount(uint256 amount);
 error NonExistentTokenId(uint256 tokenId);
 
-contract BaseNFT is ERC721Enumerable, ERC2981, Ownable, Pausable {
+contract BaseNFT is ERC721Enumerable, ERC2981, Ownable, Pausable, Whitelistable {
     using Counters for Counters.Counter;
 
     Counters.Counter private _tokenIdCounter;
@@ -66,12 +67,14 @@ contract BaseNFT is ERC721Enumerable, ERC2981, Ownable, Pausable {
         dividendsSharePerMint = (_mintPrice * _dividendsShareBasisPoints) / 1e4;
         projectSharePerMint = mintPrice - dividendsSharePerMint;
 
+        _addWhitelistSpots(msg.sender, _reservedSupply);
         for (uint256 i = 0; i < _reservedSupply; i++) {
             _mintTo(projectTreasury);
         }
     }
 
-    function _mintTo(address recipient) internal whenNotPaused {
+    function _mintTo(address recipient) internal whenNotPaused onlyWhitelisted {
+        _removeWhitelistSpots(msg.sender, 1);
         uint256 tokenId = _tokenIdCounter.current();
         _tokenIdCounter.increment();
         _safeMint(recipient, tokenId);
@@ -164,6 +167,18 @@ contract BaseNFT is ERC721Enumerable, ERC2981, Ownable, Pausable {
 
     function unpause() public onlyOwner {
         _unpause();
+    }
+
+    function addWhitelistSpots(address _addr, uint256 _amount) public onlyOwner {
+        _addWhitelistSpots(_addr, _amount);
+    }
+
+    function removeWhitelistSpots(address _addr, uint256 _amount) public onlyOwner {
+        _removeWhitelistSpots(_addr, _amount);
+    }
+
+    function clearWhitelistSpots(address _addr) public onlyOwner {
+        _clearWhitelistSpots(_addr);
     }
 
     // The following functions are overrides required by Solidity.

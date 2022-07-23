@@ -88,6 +88,7 @@ contract BaseNFTTest is Test {
 
     function testMintToWithExactPayment() public {
         vm.deal(alice, MINT_PRICE);
+        nft.addWhitelistSpots(alice, 1);
         vm.prank(alice);
         nft.mintTo{ value: MINT_PRICE }(alice);
         assertEq(nft.balanceOf(alice), 1);
@@ -95,7 +96,7 @@ contract BaseNFTTest is Test {
         assertEq(dividendsTreasury.balance, nft.dividendsSharePerMint());
 
         vm.deal(address(this), MINT_PRICE);
-        vm.prank(address(this));
+        nft.addWhitelistSpots(address(this), 1);
         nft.mintTo{ value: MINT_PRICE }(alice);
         assertEq(nft.balanceOf(alice), 2);
         assertEq(projectTreasury.balance, nft.projectSharePerMint() * 2);
@@ -104,6 +105,7 @@ contract BaseNFTTest is Test {
 
     function testMintToWithExcessPayment() public {
         vm.deal(alice, MINT_PRICE * 2);
+        nft.addWhitelistSpots(alice, 2);
         vm.prank(alice);
         nft.mintTo{ value: MINT_PRICE * 2 }(alice);
         assertEq(nft.balanceOf(alice), 1);
@@ -112,7 +114,7 @@ contract BaseNFTTest is Test {
         assertEq(alice.balance, MINT_PRICE);
 
         vm.deal(address(this), MINT_PRICE * 2);
-        vm.prank(address(this));
+        nft.addWhitelistSpots(address(this), 2);
         nft.mintTo{ value: MINT_PRICE * 2 }(alice);
         assertEq(nft.balanceOf(alice), 2);
         assertEq(projectTreasury.balance, nft.projectSharePerMint() * 2);
@@ -121,6 +123,7 @@ contract BaseNFTTest is Test {
     }
 
     function testMintToWithInsufficientPayment() public {
+        nft.addWhitelistSpots(alice, 1);
         vm.prank(alice);
         vm.expectRevert(MintPriceNotPaid.selector);
         nft.mintTo(alice);
@@ -139,6 +142,7 @@ contract BaseNFTTest is Test {
         assertEq(alice.balance, MINT_PRICE / 2);
 
         vm.deal(address(this), MINT_PRICE / 2);
+        nft.addWhitelistSpots(address(this), 1);
         vm.expectRevert(MintPriceNotPaid.selector);
         nft.mintTo{ value: MINT_PRICE / 2 }(alice);
         assertEq(nft.balanceOf(alice), 0);
@@ -149,6 +153,7 @@ contract BaseNFTTest is Test {
 
     function testMintToWithMaxSupplyReached() public {
         vm.deal(alice, MINT_PRICE * (MINTABLE_SUPPLY + 1));
+        nft.addWhitelistSpots(alice, MINTABLE_SUPPLY + 1);
         vm.startPrank(alice);
         for (uint256 i = 0; i < MINTABLE_SUPPLY; i++) {
             nft.mintTo{ value: MINT_PRICE }(alice);
@@ -162,6 +167,7 @@ contract BaseNFTTest is Test {
         assertEq(dividendsTreasury.balance, nft.dividendsSharePerMint() * MINTABLE_SUPPLY);
 
         vm.deal(address(this), MINT_PRICE);
+        nft.addWhitelistSpots(address(this), 1);
         vm.expectRevert(MaxSupplyReached.selector);
         nft.mintTo{ value: MINT_PRICE }(alice);
     }
@@ -170,6 +176,7 @@ contract BaseNFTTest is Test {
         vm.assume(amount > 0 && amount <= MINTABLE_SUPPLY);
 
         vm.deal(alice, MINT_PRICE * amount);
+        nft.addWhitelistSpots(alice, amount);
         vm.prank(alice);
         nft.mintBatchTo{ value: MINT_PRICE * amount }(alice, amount);
         assertEq(nft.balanceOf(alice), amount);
@@ -179,6 +186,7 @@ contract BaseNFTTest is Test {
         amount = MINTABLE_SUPPLY - amount;
         vm.assume(amount > 0);
         vm.deal(address(this), MINT_PRICE * amount);
+        nft.addWhitelistSpots(address(this), amount);
         nft.mintBatchTo{ value: MINT_PRICE * amount }(alice, amount);
         assertEq(nft.balanceOf(alice), MINTABLE_SUPPLY);
         assertEq(projectTreasury.balance, nft.projectSharePerMint() * MINTABLE_SUPPLY);
@@ -190,6 +198,7 @@ contract BaseNFTTest is Test {
 
         uint256 topUpAmount = (MINT_PRICE * amount) / 2;
         vm.deal(alice, topUpAmount);
+        nft.addWhitelistSpots(alice, amount);
         vm.prank(alice);
         vm.expectRevert(MintPriceNotPaid.selector);
         nft.mintBatchTo{ value: topUpAmount }(alice, amount);
@@ -199,6 +208,7 @@ contract BaseNFTTest is Test {
         assertEq(alice.balance, topUpAmount);
 
         vm.deal(address(this), topUpAmount);
+        nft.addWhitelistSpots(address(this), amount);
         vm.expectRevert(MintPriceNotPaid.selector);
         nft.mintBatchTo{ value: topUpAmount }(alice, amount);
         assertEq(nft.balanceOf(alice), 0);
@@ -212,6 +222,7 @@ contract BaseNFTTest is Test {
 
         uint256 topUpAmount = (MINT_PRICE * amount) * 2;
         vm.deal(alice, topUpAmount);
+        nft.addWhitelistSpots(alice, amount);
         vm.prank(alice);
         nft.mintBatchTo{ value: topUpAmount }(alice, amount);
         assertEq(nft.balanceOf(alice), amount);
@@ -223,6 +234,7 @@ contract BaseNFTTest is Test {
         vm.assume(amount > 0);
         topUpAmount = MINT_PRICE * amount * 2;
         vm.deal(address(this), topUpAmount);
+        nft.addWhitelistSpots(address(this), amount);
         nft.mintBatchTo{ value: topUpAmount }(alice, amount);
         assertEq(nft.balanceOf(alice), MINTABLE_SUPPLY);
         assertEq(projectTreasury.balance, nft.projectSharePerMint() * MINTABLE_SUPPLY);
@@ -282,6 +294,7 @@ contract BaseNFTTest is Test {
     function testMintingPaused() public {
         nft.pause();
         vm.deal(address(this), MINT_PRICE * 3);
+        nft.addWhitelistSpots(address(this), 3);
         vm.expectRevert("Pausable: paused");
         nft.mintTo{ value: MINT_PRICE }(alice);
         assertEq(nft.balanceOf(alice), 0);
@@ -303,6 +316,44 @@ contract BaseNFTTest is Test {
         vm.expectRevert("Ownable: caller is not the owner");
         nft.unpause();
         vm.stopPrank();
+    }
+
+    function testAddWhitelistSpots() public {
+        vm.expectRevert("Ownable: caller is not the owner");
+        vm.prank(alice);
+        nft.addWhitelistSpots(alice, 1);
+        assertEq(nft.whitelistSpots(alice), 0);
+
+        nft.addWhitelistSpots(alice, 1);
+        assertEq(nft.whitelistSpots(alice), 1);
+    }
+
+    function testRemoveWhitelistSpots() public {
+        nft.addWhitelistSpots(alice, 42);
+
+        vm.expectRevert("Ownable: caller is not the owner");
+        vm.prank(alice);
+        nft.removeWhitelistSpots(alice, 1);
+        assertEq(nft.whitelistSpots(alice), 42);
+
+        vm.expectRevert(NotEnoughWhitelistSpots.selector);
+        nft.removeWhitelistSpots(alice, 43);
+        assertEq(nft.whitelistSpots(alice), 42);
+
+        nft.removeWhitelistSpots(alice, 11);
+        assertEq(nft.whitelistSpots(alice), 31);
+    }
+
+    function testClearWhitelistSpots() public {
+        nft.addWhitelistSpots(alice, 42);
+
+        vm.expectRevert("Ownable: caller is not the owner");
+        vm.prank(alice);
+        nft.clearWhitelistSpots(alice);
+        assertEq(nft.whitelistSpots(alice), 42);
+
+        nft.clearWhitelistSpots(alice);
+        assertEq(nft.whitelistSpots(alice), 0);
     }
 
     receive() external payable {}

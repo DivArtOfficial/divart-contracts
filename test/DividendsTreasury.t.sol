@@ -50,6 +50,7 @@ contract DividendsTreasuryTest is Test {
         dividendsTreasury.initialize((address(buildingBlocksNFT)), buildingBlocksNFT);
 
         vm.deal(address(this), MINT_PRICE * MINTABLE_SUPPLY);
+        buildingBlocksNFT.addWhitelistSpots(address(this), MINTABLE_SUPPLY);
         uint256 aliceAmount = MINTABLE_SUPPLY / 2;
         buildingBlocksNFT.mintBatchTo{ value: MINT_PRICE * aliceAmount }(alice, aliceAmount);
         uint256 bobAmount = (MINTABLE_SUPPLY + 1) / 2;
