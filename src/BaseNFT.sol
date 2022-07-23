@@ -9,6 +9,7 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
+import "@openzeppelin/contracts/utils/Multicall.sol";
 
 error ZeroMaxSupply();
 error ReservedExceedsMaxSupply();
@@ -20,7 +21,7 @@ error TransferFailed(address recipient);
 error InvalidAmount(uint256 amount);
 error NonExistentTokenId(uint256 tokenId);
 
-contract BaseNFT is ERC721Enumerable, ERC2981, Ownable, Pausable, Whitelistable {
+contract BaseNFT is ERC721Enumerable, ERC2981, Ownable, Pausable, Whitelistable, Multicall {
     using Counters for Counters.Counter;
 
     Counters.Counter private _tokenIdCounter;
