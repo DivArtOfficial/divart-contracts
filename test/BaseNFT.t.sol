@@ -279,5 +279,31 @@ contract BaseNFTTest is Test {
         nft.revealMetadata("https://example.com/");
     }
 
+    function testMintingPaused() public {
+        nft.pause();
+        vm.deal(address(this), MINT_PRICE * 3);
+        vm.expectRevert("Pausable: paused");
+        nft.mintTo{ value: MINT_PRICE }(alice);
+        assertEq(nft.balanceOf(alice), 0);
+        vm.expectRevert("Pausable: paused");
+        nft.mintBatchTo{ value: MINT_PRICE * 3 }(alice, 3);
+        assertEq(nft.balanceOf(alice), 0);
+
+        nft.unpause();
+        nft.mintTo{ value: MINT_PRICE }(alice);
+        assertEq(nft.balanceOf(alice), 1);
+    }
+
+    function testPauseUnpause() public {
+        nft.pause();
+        nft.unpause();
+        vm.startPrank(alice);
+        vm.expectRevert("Ownable: caller is not the owner");
+        nft.pause();
+        vm.expectRevert("Ownable: caller is not the owner");
+        nft.unpause();
+        vm.stopPrank();
+    }
+
     receive() external payable {}
 }

@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/token/common/ERC2981.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
 error ZeroMaxSupply();
@@ -18,7 +19,7 @@ error TransferFailed(address recipient);
 error InvalidAmount(uint256 amount);
 error NonExistentTokenId(uint256 tokenId);
 
-contract BaseNFT is ERC721Enumerable, ERC2981, Ownable {
+contract BaseNFT is ERC721Enumerable, ERC2981, Ownable, Pausable {
     using Counters for Counters.Counter;
 
     Counters.Counter private _tokenIdCounter;
@@ -70,7 +71,7 @@ contract BaseNFT is ERC721Enumerable, ERC2981, Ownable {
         }
     }
 
-    function _mintTo(address recipient) internal {
+    function _mintTo(address recipient) internal whenNotPaused {
         uint256 tokenId = _tokenIdCounter.current();
         _tokenIdCounter.increment();
         _safeMint(recipient, tokenId);
@@ -155,6 +156,14 @@ contract BaseNFT is ERC721Enumerable, ERC2981, Ownable {
 
     function _baseURI() internal view virtual override returns (string memory) {
         return baseURI;
+    }
+
+    function pause() public onlyOwner {
+        _pause();
+    }
+
+    function unpause() public onlyOwner {
+        _unpause();
     }
 
     // The following functions are overrides required by Solidity.
