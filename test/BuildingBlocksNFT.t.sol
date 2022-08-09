@@ -5,14 +5,14 @@ import "../src/BuildingBlocksNFT.sol";
 import "@std/Test.sol";
 
 contract BuildingBlocksNFTTest is Test {
-    uint256 MAX_SUPPLY = 10;
-    uint256 RESERVED_SUPPLY = 0;
-    uint256 MINTABLE_SUPPLY = MAX_SUPPLY - RESERVED_SUPPLY;
-    uint256 MINT_PRICE = 0.08 ether;
-    uint256 DIVIDENDS_SHARE_BP = 1000;
-    uint96 ROYALTY_BP = 2e3;
-    uint256 DIVIDENDS_ROYALTY_SHARES = 8;
-    uint256 PROJECT_ROYALTY_SHARES = 2;
+    uint256 constant MAX_SUPPLY = 10;
+    uint256 constant RESERVED_SUPPLY = 0;
+    uint256 constant MINTABLE_SUPPLY = MAX_SUPPLY - RESERVED_SUPPLY;
+    uint256 constant MINT_PRICE = 0.08 ether;
+    uint256 constant DIVIDENDS_SHARE_BP = 1000;
+    uint96  constant ROYALTY_BP = 2e3;
+    uint256 constant DIVIDENDS_ROYALTY_SHARES = 8;
+    uint256 constant PROJECT_ROYALTY_SHARES = 2;
 
     address projectTreasury = address(1);
     address dividendsTreasury = address(2);
@@ -85,7 +85,7 @@ contract BuildingBlocksNFTTest is Test {
     }
 
     function testRoyalty() public {
-        address expectedReceiver = address(nft.paymentSplitter());
+        address expectedReceiver = address(nft.PAYMENT_SPLITTER());
 
         (address receiver, uint256 amount) = nft.royaltyInfo(0, 100);
         assertEq(receiver, expectedReceiver);

@@ -6,15 +6,15 @@ import "../src/BuildingBlocksNFT.sol";
 import "@std/Test.sol";
 
 contract DividendsTreasuryTest is Test {
-    uint256 MAX_SUPPLY = 10;
-    uint256 RESERVED_SUPPLY = 0;
-    uint256 MINTABLE_SUPPLY = MAX_SUPPLY - RESERVED_SUPPLY;
-    uint256 MINT_PRICE = 0.08 ether;
-    uint256 DIVIDENDS_SHARE_BP = 1e3;
-    uint96 ROYALTY_BP = 2e3;
-    uint256 DIVIDENDS_ROYALTY_SHARES = 8;
-    uint256 PROJECT_ROYALTY_SHARES = 2;
-    uint256 BLOCK_TIME = 3;
+    uint256 constant MAX_SUPPLY = 10;
+    uint256 constant RESERVED_SUPPLY = 0;
+    uint256 constant MINTABLE_SUPPLY = MAX_SUPPLY - RESERVED_SUPPLY;
+    uint256 constant MINT_PRICE = 0.08 ether;
+    uint256 constant DIVIDENDS_SHARE_BP = 1e3;
+    uint96  constant ROYALTY_BP = 2e3;
+    uint256 constant DIVIDENDS_ROYALTY_SHARES = 8;
+    uint256 constant PROJECT_ROYALTY_SHARES = 2;
+    uint256 constant BLOCK_TIME = 3;
 
     address projectTreasury = address(1);
     address alice = address(2);
@@ -170,7 +170,7 @@ contract DividendsTreasuryTest is Test {
         vm.expectRevert(TokenNotOwnedByAccount.selector);
         dividendsTreasury.claimDividendsForToken(2);
 
-        vm.expectRevert("ERC721: owner query for nonexistent token");
+        vm.expectRevert("ERC721: invalid token ID");
         dividendsTreasury.claimDividendsForToken(MAX_SUPPLY);
 
         vm.roll(block.number + 1337 / BLOCK_TIME);

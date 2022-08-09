@@ -9,7 +9,7 @@ error RaritiesLengthMismatch();
 error NonExistentTokenId(uint256 tokenId);
 
 contract BuildingBlocksNFT is BaseNFT, RarityOracle {
-    PaymentSplitter public paymentSplitter;
+    PaymentSplitter public immutable PAYMENT_SPLITTER;
 
     uint256[] private _rarities;
     uint256 private _raritiesSum;
@@ -47,8 +47,8 @@ contract BuildingBlocksNFT is BaseNFT, RarityOracle {
         _payees[1] = _projectTreasury;
         _shares[1] = _projectRoyaltyShares;
 
-        paymentSplitter = new PaymentSplitter(_payees, _shares);
-        super._setDefaultRoyalty(address(paymentSplitter), _royaltyBasisPoints);
+        PAYMENT_SPLITTER = new PaymentSplitter(_payees, _shares);
+        super._setDefaultRoyalty(address(PAYMENT_SPLITTER), _royaltyBasisPoints);
     }
 
     function revealRarities(uint256[] calldata rarities) public onlyOwner {
