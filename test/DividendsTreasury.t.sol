@@ -11,10 +11,9 @@ contract DividendsTreasuryTest is Test {
     uint256 constant MINTABLE_SUPPLY = MAX_SUPPLY - RESERVED_SUPPLY;
     uint256 constant MINT_PRICE = 0.08 ether;
     uint256 constant DIVIDENDS_SHARE_BP = 1e3;
-    uint96  constant ROYALTY_BP = 2e3;
+    uint96 constant ROYALTY_BP = 2e3;
     uint256 constant DIVIDENDS_ROYALTY_SHARES = 8;
     uint256 constant PROJECT_ROYALTY_SHARES = 2;
-    uint256 constant BLOCK_TIME = 3;
 
     address projectTreasury = address(1);
     address alice = address(2);
@@ -31,7 +30,7 @@ contract DividendsTreasuryTest is Test {
         vm.label(alice, "Alice");
         vm.label(bob, "Bob");
 
-        dividendsTreasury = new DividendsTreasury(projectTreasury, BLOCK_TIME);
+        dividendsTreasury = new DividendsTreasury(projectTreasury);
 
         buildingBlocksNFT = new BuildingBlocksNFT(
             "name",
@@ -112,7 +111,7 @@ contract DividendsTreasuryTest is Test {
         assertEq(dividendsTreasury.treasuryBalance(), (initialTreasuryBalance + 1) / 2);
         assertEq(address(dividendsTreasury).balance, initialTreasuryBalance);
 
-        vm.roll(block.number + 42 / BLOCK_TIME);
+        vm.warp(block.timestamp + 42);
         dividendsTreasury.issueDividends((initialTreasuryBalance + 1) / 2, 42);
         assertEq(dividendsTreasury.treasuryBalance(), 0);
         assertEq(address(dividendsTreasury).balance, initialTreasuryBalance);
@@ -173,7 +172,7 @@ contract DividendsTreasuryTest is Test {
         vm.expectRevert("ERC721: invalid token ID");
         dividendsTreasury.claimDividendsForToken(MAX_SUPPLY);
 
-        vm.roll(block.number + 1337 / BLOCK_TIME);
+        vm.warp(block.timestamp + 1337);
         address ownerOf2 = buildingBlocksNFT.ownerOf(2);
         vm.expectRevert(LastRoundNotOpen.selector);
         vm.prank(ownerOf2);
@@ -203,7 +202,7 @@ contract DividendsTreasuryTest is Test {
         assertEq(dividendsTreasury.treasuryBalance(), 0);
         assertEq(address(dividendsTreasury).balance, initialTreasuryBalance - aliceDividends);
 
-        vm.roll(block.number + 2337 / BLOCK_TIME);
+        vm.warp(block.timestamp + 2337);
         vm.expectRevert(LastRoundNotOpen.selector);
         dividendsTreasury.claimDividends();
     }
@@ -219,7 +218,7 @@ contract DividendsTreasuryTest is Test {
         dividendsTreasury.terminateDividendsRound();
         assertEq(dividendsTreasury.treasuryBalance(), 0);
         assertEq(address(dividendsTreasury).balance, initialTreasuryBalance);
-        assertEq(dividendsTreasury.getDividendsRound(0).endBlock, block.number);
+        assertEq(dividendsTreasury.getDividendsRound(0).endTimestamp, block.timestamp);
     }
 
     function testWithdraw() public {
@@ -262,7 +261,7 @@ contract DividendsTreasuryTest is Test {
         vm.expectRevert(LastRoundNotClosed.selector);
         dividendsTreasury.withdrawUnclaimed();
 
-        vm.roll(block.number + 1337 / BLOCK_TIME);
+        vm.warp(block.timestamp + 1337);
         dividendsTreasury.withdrawUnclaimed();
         assertEq(dividendsTreasury.treasuryBalance(), 0);
         assertEq(address(projectTreasury).balance, initialTreasuryBalance + initialProjectTreasuryBalance);
@@ -279,7 +278,7 @@ contract DividendsTreasuryTest is Test {
         vm.expectRevert(LastRoundNotClosed.selector);
         dividendsTreasury.waiveUnclaimed();
 
-        vm.roll(block.number + 1337 / BLOCK_TIME);
+        vm.warp(block.timestamp + 1337);
         dividendsTreasury.waiveUnclaimed();
         assertEq(dividendsTreasury.treasuryBalance(), initialTreasuryBalance);
         assertEq(address(dividendsTreasury).balance, initialTreasuryBalance);

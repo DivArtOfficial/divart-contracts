@@ -6,7 +6,6 @@ import { IERC721 } from "@openzeppelin/contracts/interfaces/IERC721.sol";
 import { IERC721Enumerable } from "@openzeppelin/contracts/interfaces/IERC721Enumerable.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
-error ZeroBlockTime();
 error NotInitialized();
 error AlreadyInitialized();
 error LastRoundNotClosed();
@@ -25,8 +24,8 @@ contract DividendsTreasury is Ownable {
     struct DividendsRound {
         uint256 totalClaimable;
         uint256 totalClaimed;
-        uint256 startBlock;
-        uint256 endBlock;
+        uint256 startTimestamp;
+        uint256 endTimestamp;
     }
 
     DividendsRound[] private _dividendsRounds;
@@ -36,23 +35,17 @@ contract DividendsTreasury is Ownable {
     mapping(uint256 => mapping(uint256 => uint256)) public claimedAmountForRoundForToken;
 
     address public immutable projectTreasury;
-    uint256 public immutable blockTimeInSeconds;
 
     address public buildingBlocksCollection;
     RarityOracle public rarityOracle;
 
-    constructor(address _projectTreasury, uint256 _blockTimeInSeconds) {
-        if (_blockTimeInSeconds == 0) {
-            revert ZeroBlockTime();
-        }
-
+    constructor(address _projectTreasury) {
         projectTreasury = _projectTreasury;
-        blockTimeInSeconds = _blockTimeInSeconds;
     }
 
     modifier whenLastRoundIsClosed() {
         uint256 pastRoundsCount = _dividendsRounds.length;
-        if (pastRoundsCount > 0 && _dividendsRounds[pastRoundsCount - 1].endBlock > block.number) {
+        if (pastRoundsCount > 0 && _dividendsRounds[pastRoundsCount - 1].endTimestamp > block.timestamp) {
             revert LastRoundNotClosed();
         }
         _;
@@ -60,7 +53,7 @@ contract DividendsTreasury is Ownable {
 
     modifier whenLastRoundIsOpen() {
         uint256 pastRoundsCount = _dividendsRounds.length;
-        if (pastRoundsCount == 0 || _dividendsRounds[pastRoundsCount - 1].endBlock <= block.number) {
+        if (pastRoundsCount == 0 || _dividendsRounds[pastRoundsCount - 1].endTimestamp <= block.timestamp) {
             revert LastRoundNotOpen();
         }
         _;
@@ -111,7 +104,7 @@ contract DividendsTreasury is Ownable {
             revert DividendsAmountExceedsBalance();
         }
 
-        if (durationInSeconds / blockTimeInSeconds == 0) {
+        if (durationInSeconds == 0) {
             revert NullDuration();
         }
 
@@ -119,8 +112,8 @@ contract DividendsTreasury is Ownable {
 
         DividendsRound storage newRound = _dividendsRounds.push();
         newRound.totalClaimable = amount;
-        newRound.startBlock = block.number;
-        newRound.endBlock = block.number + durationInSeconds / blockTimeInSeconds;
+        newRound.startTimestamp = block.timestamp;
+        newRound.endTimestamp = block.timestamp + durationInSeconds;
     }
 
     function getAccountTokens(address account) public view returns (uint256[] memory) {
@@ -172,7 +165,7 @@ contract DividendsTreasury is Ownable {
         claimedAmountForRoundForToken[roundIndex][tokenId] = dividends;
 
         if (_dividendsRounds[roundIndex].totalClaimed == _dividendsRounds[roundIndex].totalClaimable) {
-            _dividendsRounds[roundIndex].endBlock = block.number;
+            _dividendsRounds[roundIndex].endTimestamp = block.timestamp;
         }
 
         (bool success, ) = msg.sender.call{ value: dividends }("");
@@ -197,7 +190,7 @@ contract DividendsTreasury is Ownable {
     }
 
     function terminateDividendsRound() public onlyOwner whenLastRoundIsOpen {
-        _dividendsRounds[_dividendsRounds.length - 1].endBlock = block.number;
+        _dividendsRounds[_dividendsRounds.length - 1].endTimestamp = block.timestamp;
     }
 
     function withdraw(uint256 amount) public onlyOwner whenInitialized {
