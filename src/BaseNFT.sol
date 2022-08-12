@@ -2,14 +2,14 @@
 pragma solidity 0.8.14;
 
 import "./Whitelistable.sol";
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
-import "@openzeppelin/contracts/token/common/ERC2981.sol";
-import "@openzeppelin/contracts/utils/Strings.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/security/Pausable.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
-import "@openzeppelin/contracts/utils/Multicall.sol";
+import "openzeppelin-contracts/contracts/token/ERC721/ERC721.sol";
+import "openzeppelin-contracts/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+import "openzeppelin-contracts/contracts/token/common/ERC2981.sol";
+import "openzeppelin-contracts/contracts/utils/Strings.sol";
+import "openzeppelin-contracts/contracts/access/Ownable.sol";
+import "openzeppelin-contracts/contracts/security/Pausable.sol";
+import "openzeppelin-contracts/contracts/utils/Counters.sol";
+import "openzeppelin-contracts/contracts/utils/Multicall.sol";
 
 error ZeroMaxSupply();
 error ReservedExceedsMaxSupply();

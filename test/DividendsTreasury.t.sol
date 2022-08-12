@@ -3,7 +3,7 @@ pragma solidity 0.8.14;
 
 import "../src/DividendsTreasury.sol";
 import "../src/BuildingBlocksNFT.sol";
-import "@std/Test.sol";
+import "forge-std/Test.sol";
 
 contract DividendsTreasuryTest is Test {
     uint256 constant MAX_SUPPLY = 10;

@@ -2,7 +2,7 @@
 pragma solidity ^0.8.14;
 
 import "../src/BuildingBlocksNFT.sol";
-import "@std/Test.sol";
+import "forge-std/Test.sol";
 
 contract BuildingBlocksNFTTest is Test {
     uint256 constant MAX_SUPPLY = 10;
@@ -10,7 +10,7 @@ contract BuildingBlocksNFTTest is Test {
     uint256 constant MINTABLE_SUPPLY = MAX_SUPPLY - RESERVED_SUPPLY;
     uint256 constant MINT_PRICE = 0.08 ether;
     uint256 constant DIVIDENDS_SHARE_BP = 1000;
-    uint96  constant ROYALTY_BP = 2e3;
+    uint96 constant ROYALTY_BP = 2e3;
     uint256 constant DIVIDENDS_ROYALTY_SHARES = 8;
     uint256 constant PROJECT_ROYALTY_SHARES = 2;
 

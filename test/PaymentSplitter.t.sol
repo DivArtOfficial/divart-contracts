@@ -2,7 +2,7 @@
 pragma solidity 0.8.14;
 
 import { PaymentSplitter } from "../src/PaymentSplitter.sol";
-import "@std/Test.sol";
+import "forge-std/Test.sol";
 
 contract PaymentSplitterTest is Test {
     function testReleaseAll() public {

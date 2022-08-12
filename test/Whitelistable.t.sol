@@ -2,7 +2,7 @@
 pragma solidity 0.8.14;
 
 import "../src/Whitelistable.sol";
-import "@std/Test.sol";
+import "forge-std/Test.sol";
 
 contract WhitelistableTest is Test, Whitelistable {
     function testAddWhitelistSpots() public {

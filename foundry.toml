@@ -13,13 +13,6 @@ optimizer = true
 optimizer_runs = 666
 # Fuzz more than the default 256
 fuzz_runs = 1_000
-# Configure remappings
-remappings = [
-  "@ds=lib/ds-test/src/",
-  "@std=lib/forge-std/src/",
-  "@rari-capital/solmate=lib/solmate/src/",
-  "@openzeppelin=lib/openzeppelin-contracts/"
-]
 test = 'test'
 
 [profile.ci]

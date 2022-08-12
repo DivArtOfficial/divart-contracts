@@ -2,7 +2,7 @@
 pragma solidity ^0.8.14;
 
 import "../src/BaseNFT.sol";
-import "@std/Test.sol";
+import "forge-std/Test.sol";
 
 contract BaseNFTTest is Test {
     uint256 MAX_SUPPLY = 10;

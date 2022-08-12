@@ -2,9 +2,9 @@
 pragma solidity 0.8.14;
 
 import { RarityOracle } from "./interfaces/RarityOracle.sol";
-import { IERC721 } from "@openzeppelin/contracts/interfaces/IERC721.sol";
-import { IERC721Enumerable } from "@openzeppelin/contracts/interfaces/IERC721Enumerable.sol";
-import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import { IERC721 } from "openzeppelin-contracts/contracts/interfaces/IERC721.sol";
+import { IERC721Enumerable } from "openzeppelin-contracts/contracts/interfaces/IERC721Enumerable.sol";
+import { Ownable } from "openzeppelin-contracts/contracts/access/Ownable.sol";
 
 error NotInitialized();
 error AlreadyInitialized();

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity 0.8.14;
 
-import { PaymentSplitter as Splitter } from "@openzeppelin/contracts/finance/PaymentSplitter.sol";
+import { PaymentSplitter as Splitter } from "openzeppelin-contracts/contracts/finance/PaymentSplitter.sol";
 
 contract PaymentSplitter is Splitter {
     uint256 _payeesCount;
