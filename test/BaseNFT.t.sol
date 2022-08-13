@@ -130,7 +130,7 @@ contract BaseNFTTest is Test {
         nft.addWhitelistSpots(alice, 1);
         vm.prank(alice);
         vm.expectRevert(MintPriceNotPaid.selector);
-        nft.mint(alice,1);
+        nft.mint(alice, 1);
         assertEq(nft.balanceOf(alice), 0);
         assertEq(nft.whitelistSpots(alice), 1);
         assertEq(projectTreasury.balance, 0);
@@ -380,12 +380,22 @@ contract BaseNFTTest is Test {
         assertEq(nft.whitelistSpots(alice), 0);
     }
 
-    function testMulticallAddWhitelistSpots() public {
-        bytes[] memory data = new bytes[](3);
-        data[0] = abi.encodeWithSelector(nft.addWhitelistSpots.selector, alice, 1);
-        data[1] = abi.encodeWithSelector(nft.addWhitelistSpots.selector, alice, 1);
-        data[2] = abi.encodeWithSelector(nft.addWhitelistSpots.selector, address(1337), 42);
-        nft.multicall(data);
+    function testMultipleAddWhitelistSpots() public {
+        address[] memory addresses = new address[](3);
+        uint256[] memory amounts = new uint256[](2);
+
+        vm.expectRevert(ArrayLengthMismatch.selector);
+        nft.addWhitelistSpots(addresses, amounts);
+
+        amounts = new uint256[](3);
+
+        addresses[0] = alice;
+        addresses[1] = alice;
+        addresses[2] = address(1337);
+        amounts[0] = 1;
+        amounts[1] = 1;
+        amounts[2] = 42;
+        nft.addWhitelistSpots(addresses, amounts);
         assertEq(nft.whitelistSpots(alice), 2);
         assertEq(nft.whitelistSpots(address(1337)), 42);
     }

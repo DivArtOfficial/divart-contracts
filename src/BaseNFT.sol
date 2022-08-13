@@ -8,7 +8,6 @@ import "openzeppelin-contracts/contracts/utils/Strings.sol";
 import "openzeppelin-contracts/contracts/access/Ownable.sol";
 import "openzeppelin-contracts/contracts/security/Pausable.sol";
 import "openzeppelin-contracts/contracts/utils/Counters.sol";
-import "openzeppelin-contracts/contracts/utils/Multicall.sol";
 
 error ZeroMaxSupply();
 error ReservedExceedsMaxSupply();
@@ -19,8 +18,9 @@ error EmptyURI();
 error TransferFailed(address recipient);
 error InvalidAmount(uint256 amount);
 error NonExistentTokenId(uint256 tokenId);
+error ArrayLengthMismatch();
 
-contract BaseNFT is ERC721AQueryable, ERC2981, Ownable, Pausable, Whitelistable, Multicall {
+contract BaseNFT is ERC721AQueryable, ERC2981, Ownable, Pausable, Whitelistable {
     using Counters for Counters.Counter;
 
     Counters.Counter private _tokenIdCounter;
@@ -169,6 +169,16 @@ contract BaseNFT is ERC721AQueryable, ERC2981, Ownable, Pausable, Whitelistable,
 
     function addWhitelistSpots(address _addr, uint256 _amount) public onlyOwner {
         _addWhitelistSpots(_addr, _amount);
+    }
+
+    function addWhitelistSpots(address[] calldata _addresses, uint256[] calldata _amounts) public onlyOwner {
+        if (_addresses.length != _amounts.length) {
+            revert ArrayLengthMismatch();
+        }
+
+        for (uint256 i = 0; i < _addresses.length; i++) {
+            addWhitelistSpots(_addresses[i], _amounts[i]);
+        }
     }
 
     function removeWhitelistSpots(address _addr, uint256 _amount) public onlyOwner {
