@@ -2,8 +2,7 @@
 pragma solidity 0.8.14;
 
 import "./Whitelistable.sol";
-import "openzeppelin-contracts/contracts/token/ERC721/ERC721.sol";
-import "openzeppelin-contracts/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+import "ERC721A/extensions/ERC721AQueryable.sol";
 import "openzeppelin-contracts/contracts/token/common/ERC2981.sol";
 import "openzeppelin-contracts/contracts/utils/Strings.sol";
 import "openzeppelin-contracts/contracts/access/Ownable.sol";
@@ -21,7 +20,7 @@ error TransferFailed(address recipient);
 error InvalidAmount(uint256 amount);
 error NonExistentTokenId(uint256 tokenId);
 
-contract BaseNFT is ERC721Enumerable, ERC2981, Ownable, Pausable, Whitelistable, Multicall {
+contract BaseNFT is ERC721AQueryable, ERC2981, Ownable, Pausable, Whitelistable, Multicall {
     using Counters for Counters.Counter;
 
     Counters.Counter private _tokenIdCounter;
@@ -47,7 +46,7 @@ contract BaseNFT is ERC721Enumerable, ERC2981, Ownable, Pausable, Whitelistable,
         address _dividendsTreasury,
         address _projectTreasury,
         uint256 _dividendsShareBasisPoints
-    ) ERC721(_name, _symbol) {
+    ) ERC721A(_name, _symbol) {
         if (_maxSupply == 0) {
             revert ZeroMaxSupply();
         }
@@ -68,47 +67,47 @@ contract BaseNFT is ERC721Enumerable, ERC2981, Ownable, Pausable, Whitelistable,
         dividendsSharePerMint = (_mintPrice * _dividendsShareBasisPoints) / 1e4;
         projectSharePerMint = mintPrice - dividendsSharePerMint;
 
-        for (uint256 i = 0; i < _reservedSupply; i++) {
-            _mintTo(projectTreasury);
+        if (_reservedSupply > 0) {
+            _mint(projectTreasury, _reservedSupply);
         }
     }
 
-    function _mintTo(address recipient) internal {
-        uint256 tokenId = _tokenIdCounter.current();
-        _tokenIdCounter.increment();
-        _safeMint(recipient, tokenId);
-    }
+    // function _mintTo(address recipient) internal {
+    //     uint256 tokenId = _tokenIdCounter.current();
+    //     _tokenIdCounter.increment();
+    //     _safeMint(recipient, tokenId);
+    // }
 
-    function mintTo(address recipient) public payable whenNotPaused onlyWhitelisted {
-        if (msg.value < mintPrice) {
-            revert MintPriceNotPaid();
-        }
+    // function mintTo(address recipient) public payable whenNotPaused onlyWhitelisted {
+    //     if (msg.value < mintPrice) {
+    //         revert MintPriceNotPaid();
+    //     }
+    //
+    //     if (totalSupply() >= maxSupply) {
+    //         revert MaxSupplyReached();
+    //     }
+    //
+    //     _removeWhitelistSpots(msg.sender, 1);
+    //     _mintTo(recipient);
+    //
+    //     (bool success, ) = address(dividendsTreasury).call{ value: dividendsSharePerMint }("");
+    //     if (!success) {
+    //         revert TransferFailed(address(dividendsTreasury));
+    //     }
+    //
+    //     (success, ) = address(projectTreasury).call{ value: projectSharePerMint }("");
+    //     if (!success) {
+    //         revert TransferFailed(address(projectTreasury));
+    //     }
+    //
+    //     uint256 excessPayment = msg.value - mintPrice;
+    //     (success, ) = msg.sender.call{ value: excessPayment }("");
+    //     if (!success) {
+    //         revert TransferFailed(msg.sender);
+    //     }
+    // }
 
-        if (totalSupply() >= maxSupply) {
-            revert MaxSupplyReached();
-        }
-
-        _removeWhitelistSpots(msg.sender, 1);
-        _mintTo(recipient);
-
-        (bool success, ) = address(dividendsTreasury).call{ value: dividendsSharePerMint }("");
-        if (!success) {
-            revert TransferFailed(address(dividendsTreasury));
-        }
-
-        (success, ) = address(projectTreasury).call{ value: projectSharePerMint }("");
-        if (!success) {
-            revert TransferFailed(address(projectTreasury));
-        }
-
-        uint256 excessPayment = msg.value - mintPrice;
-        (success, ) = msg.sender.call{ value: excessPayment }("");
-        if (!success) {
-            revert TransferFailed(msg.sender);
-        }
-    }
-
-    function mintBatchTo(address recipient, uint256 amount) public payable whenNotPaused onlyWhitelisted {
+    function mint(address recipient, uint256 amount) public payable whenNotPaused onlyWhitelisted {
         if (amount == 0 || amount > maxSupply) {
             revert InvalidAmount(amount);
         }
@@ -123,9 +122,7 @@ contract BaseNFT is ERC721Enumerable, ERC2981, Ownable, Pausable, Whitelistable,
         }
 
         _removeWhitelistSpots(msg.sender, amount);
-        for (uint256 i = 0; i < amount; i++) {
-            _mintTo(recipient);
-        }
+        _mint(recipient, amount);
 
         uint256 dividendsShareTotal = dividendsSharePerMint * amount;
         (bool success, ) = address(dividendsTreasury).call{ value: dividendsShareTotal }("");
@@ -184,15 +181,18 @@ contract BaseNFT is ERC721Enumerable, ERC2981, Ownable, Pausable, Whitelistable,
 
     // The following functions are overrides required by Solidity.
 
-    function _beforeTokenTransfer(
-        address from,
-        address to,
-        uint256 tokenId
-    ) internal override(ERC721Enumerable) {
-        super._beforeTokenTransfer(from, to, tokenId);
-    }
-
-    function supportsInterface(bytes4 interfaceId) public view override(ERC721Enumerable, ERC2981) returns (bool) {
-        return super.supportsInterface(interfaceId);
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        virtual
+        override(IERC721A, ERC721A, ERC2981)
+        returns (bool)
+    {
+        // Supports the following `interfaceId`s:
+        // - IERC165: 0x01ffc9a7
+        // - IERC721: 0x80ac58cd
+        // - IERC721Metadata: 0x5b5e139f
+        // - IERC2981: 0x2a55205a
+        return ERC721A.supportsInterface(interfaceId) || ERC2981.supportsInterface(interfaceId);
     }
 }

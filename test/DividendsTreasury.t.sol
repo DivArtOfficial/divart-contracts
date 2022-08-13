@@ -4,6 +4,7 @@ pragma solidity 0.8.14;
 import "../src/DividendsTreasury.sol";
 import "../src/BuildingBlocksNFT.sol";
 import "forge-std/Test.sol";
+import "ERC721A/IERC721A.sol";
 
 contract DividendsTreasuryTest is Test {
     uint256 constant MAX_SUPPLY = 10;
@@ -51,9 +52,9 @@ contract DividendsTreasuryTest is Test {
         vm.deal(address(this), MINT_PRICE * MINTABLE_SUPPLY);
         buildingBlocksNFT.addWhitelistSpots(address(this), MINTABLE_SUPPLY);
         uint256 aliceAmount = MINTABLE_SUPPLY / 2;
-        buildingBlocksNFT.mintBatchTo{ value: MINT_PRICE * aliceAmount }(alice, aliceAmount);
+        buildingBlocksNFT.mint{ value: MINT_PRICE * aliceAmount }(alice, aliceAmount);
         uint256 bobAmount = (MINTABLE_SUPPLY + 1) / 2;
-        buildingBlocksNFT.mintBatchTo{ value: MINT_PRICE * bobAmount }(bob, bobAmount);
+        buildingBlocksNFT.mint{ value: MINT_PRICE * bobAmount }(bob, bobAmount);
 
         uint256[] memory rarities = new uint256[](MAX_SUPPLY);
         for (uint256 i = 0; i < MAX_SUPPLY; i++) {
@@ -117,12 +118,6 @@ contract DividendsTreasuryTest is Test {
         assertEq(address(dividendsTreasury).balance, initialTreasuryBalance);
     }
 
-    function testGetAccountTokens() public {
-        assertEq(dividendsTreasury.getAccountTokens(alice).length, MINTABLE_SUPPLY / 2);
-        assertEq(dividendsTreasury.getAccountTokens(bob).length, (MINTABLE_SUPPLY + 1) / 2);
-        assertEq(dividendsTreasury.getAccountTokens(projectTreasury).length, RESERVED_SUPPLY);
-    }
-
     function testCalculateDividendsForAccount() public {
         uint256 treasuryBalance = dividendsTreasury.treasuryBalance();
         dividendsTreasury.issueDividends(treasuryBalance, 1337);
@@ -169,7 +164,7 @@ contract DividendsTreasuryTest is Test {
         vm.expectRevert(TokenNotOwnedByAccount.selector);
         dividendsTreasury.claimDividendsForToken(2);
 
-        vm.expectRevert("ERC721: invalid token ID");
+        vm.expectRevert(IERC721A.OwnerQueryForNonexistentToken.selector);
         dividendsTreasury.claimDividendsForToken(MAX_SUPPLY);
 
         vm.warp(block.timestamp + 1337);

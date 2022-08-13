@@ -90,7 +90,7 @@ contract BaseNFTTest is Test {
         vm.deal(alice, MINT_PRICE);
         nft.addWhitelistSpots(alice, 1);
         vm.prank(alice);
-        nft.mintTo{ value: MINT_PRICE }(alice);
+        nft.mint{ value: MINT_PRICE }(alice, 1);
         assertEq(nft.balanceOf(alice), 1);
         assertEq(nft.whitelistSpots(alice), 0);
         assertEq(projectTreasury.balance, nft.projectSharePerMint());
@@ -98,7 +98,7 @@ contract BaseNFTTest is Test {
 
         vm.deal(address(this), MINT_PRICE);
         nft.addWhitelistSpots(address(this), 1);
-        nft.mintTo{ value: MINT_PRICE }(alice);
+        nft.mint{ value: MINT_PRICE }(alice, 1);
         assertEq(nft.balanceOf(alice), 2);
         assertEq(nft.whitelistSpots(address(this)), 0);
         assertEq(projectTreasury.balance, nft.projectSharePerMint() * 2);
@@ -109,7 +109,7 @@ contract BaseNFTTest is Test {
         vm.deal(alice, MINT_PRICE * 2);
         nft.addWhitelistSpots(alice, 2);
         vm.prank(alice);
-        nft.mintTo{ value: MINT_PRICE * 2 }(alice);
+        nft.mint{ value: MINT_PRICE * 2 }(alice, 1);
         assertEq(nft.balanceOf(alice), 1);
         assertEq(nft.whitelistSpots(alice), 1);
         assertEq(projectTreasury.balance, nft.projectSharePerMint());
@@ -118,7 +118,7 @@ contract BaseNFTTest is Test {
 
         vm.deal(address(this), MINT_PRICE * 2);
         nft.addWhitelistSpots(address(this), 2);
-        nft.mintTo{ value: MINT_PRICE * 2 }(alice);
+        nft.mint{ value: MINT_PRICE * 2 }(alice, 1);
         assertEq(nft.balanceOf(alice), 2);
         assertEq(nft.whitelistSpots(address(this)), 1);
         assertEq(projectTreasury.balance, nft.projectSharePerMint() * 2);
@@ -130,7 +130,7 @@ contract BaseNFTTest is Test {
         nft.addWhitelistSpots(alice, 1);
         vm.prank(alice);
         vm.expectRevert(MintPriceNotPaid.selector);
-        nft.mintTo(alice);
+        nft.mint(alice,1);
         assertEq(nft.balanceOf(alice), 0);
         assertEq(nft.whitelistSpots(alice), 1);
         assertEq(projectTreasury.balance, 0);
@@ -140,7 +140,7 @@ contract BaseNFTTest is Test {
         vm.deal(alice, MINT_PRICE / 2);
         vm.prank(alice);
         vm.expectRevert(MintPriceNotPaid.selector);
-        nft.mintTo{ value: MINT_PRICE / 2 }(alice);
+        nft.mint{ value: MINT_PRICE / 2 }(alice, 1);
         assertEq(nft.balanceOf(alice), 0);
         assertEq(nft.whitelistSpots(alice), 1);
         assertEq(projectTreasury.balance, 0);
@@ -150,7 +150,7 @@ contract BaseNFTTest is Test {
         vm.deal(address(this), MINT_PRICE / 2);
         nft.addWhitelistSpots(address(this), 1);
         vm.expectRevert(MintPriceNotPaid.selector);
-        nft.mintTo{ value: MINT_PRICE / 2 }(alice);
+        nft.mint{ value: MINT_PRICE / 2 }(alice, 1);
         assertEq(nft.balanceOf(alice), 0);
         assertEq(nft.whitelistSpots(address(this)), 1);
         assertEq(projectTreasury.balance, 0);
@@ -163,12 +163,12 @@ contract BaseNFTTest is Test {
         nft.addWhitelistSpots(alice, MINTABLE_SUPPLY + 1);
         vm.startPrank(alice);
         for (uint256 i = 0; i < MINTABLE_SUPPLY; i++) {
-            nft.mintTo{ value: MINT_PRICE }(alice);
+            nft.mint{ value: MINT_PRICE }(alice, 1);
         }
         assertEq(nft.balanceOf(alice), MINTABLE_SUPPLY);
         assertEq(nft.whitelistSpots(alice), 1);
         vm.expectRevert(MaxSupplyReached.selector);
-        nft.mintTo{ value: MINT_PRICE }(alice);
+        nft.mint{ value: MINT_PRICE }(alice, 1);
         assertEq(nft.balanceOf(alice), MINTABLE_SUPPLY);
         assertEq(nft.whitelistSpots(alice), 1);
         vm.stopPrank();
@@ -180,7 +180,7 @@ contract BaseNFTTest is Test {
         vm.deal(address(this), MINT_PRICE);
         nft.addWhitelistSpots(address(this), 1);
         vm.expectRevert(MaxSupplyReached.selector);
-        nft.mintTo{ value: MINT_PRICE }(alice);
+        nft.mint{ value: MINT_PRICE }(alice, 1);
         assertEq(nft.whitelistSpots(address(this)), 1);
     }
 
@@ -190,7 +190,7 @@ contract BaseNFTTest is Test {
         vm.deal(alice, MINT_PRICE * amount);
         nft.addWhitelistSpots(alice, amount);
         vm.prank(alice);
-        nft.mintBatchTo{ value: MINT_PRICE * amount }(alice, amount);
+        nft.mint{ value: MINT_PRICE * amount }(alice, amount);
         assertEq(nft.balanceOf(alice), amount);
         assertEq(nft.whitelistSpots(alice), 0);
         assertEq(projectTreasury.balance, nft.projectSharePerMint() * amount);
@@ -200,7 +200,7 @@ contract BaseNFTTest is Test {
         vm.assume(amount > 0);
         vm.deal(address(this), MINT_PRICE * amount);
         nft.addWhitelistSpots(address(this), amount);
-        nft.mintBatchTo{ value: MINT_PRICE * amount }(alice, amount);
+        nft.mint{ value: MINT_PRICE * amount }(alice, amount);
         assertEq(nft.balanceOf(alice), MINTABLE_SUPPLY);
         assertEq(nft.whitelistSpots(address(this)), 0);
         assertEq(projectTreasury.balance, nft.projectSharePerMint() * MINTABLE_SUPPLY);
@@ -215,7 +215,7 @@ contract BaseNFTTest is Test {
         nft.addWhitelistSpots(alice, amount);
         vm.prank(alice);
         vm.expectRevert(MintPriceNotPaid.selector);
-        nft.mintBatchTo{ value: topUpAmount }(alice, amount);
+        nft.mint{ value: topUpAmount }(alice, amount);
         assertEq(nft.balanceOf(alice), 0);
         assertEq(nft.whitelistSpots(alice), amount);
         assertEq(projectTreasury.balance, 0);
@@ -225,7 +225,7 @@ contract BaseNFTTest is Test {
         vm.deal(address(this), topUpAmount);
         nft.addWhitelistSpots(address(this), amount);
         vm.expectRevert(MintPriceNotPaid.selector);
-        nft.mintBatchTo{ value: topUpAmount }(alice, amount);
+        nft.mint{ value: topUpAmount }(alice, amount);
         assertEq(nft.balanceOf(alice), 0);
         assertEq(nft.whitelistSpots(address(this)), amount);
         assertEq(projectTreasury.balance, 0);
@@ -240,7 +240,7 @@ contract BaseNFTTest is Test {
         vm.deal(alice, topUpAmount);
         nft.addWhitelistSpots(alice, amount);
         vm.prank(alice);
-        nft.mintBatchTo{ value: topUpAmount }(alice, amount);
+        nft.mint{ value: topUpAmount }(alice, amount);
         assertEq(nft.balanceOf(alice), amount);
         assertEq(nft.whitelistSpots(alice), 0);
         assertEq(projectTreasury.balance, nft.projectSharePerMint() * amount);
@@ -252,7 +252,7 @@ contract BaseNFTTest is Test {
         topUpAmount = MINT_PRICE * amount * 2;
         vm.deal(address(this), topUpAmount);
         nft.addWhitelistSpots(address(this), amount);
-        nft.mintBatchTo{ value: topUpAmount }(alice, amount);
+        nft.mint{ value: topUpAmount }(alice, amount);
         assertEq(nft.balanceOf(alice), MINTABLE_SUPPLY);
         assertEq(nft.whitelistSpots(address(this)), 0);
         assertEq(projectTreasury.balance, nft.projectSharePerMint() * MINTABLE_SUPPLY);
@@ -265,32 +265,32 @@ contract BaseNFTTest is Test {
         nft.addWhitelistSpots(address(alice), 1);
 
         vm.expectRevert(abi.encodeWithSelector(InvalidAmount.selector, 0));
-        nft.mintBatchTo(alice, 0);
+        nft.mint(alice, 0);
         assertEq(nft.balanceOf(alice), 0);
 
         vm.expectRevert(abi.encodeWithSelector(InvalidAmount.selector, 0));
         vm.prank(alice);
-        nft.mintBatchTo(alice, 0);
+        nft.mint(alice, 0);
         assertEq(nft.balanceOf(alice), 0);
 
         vm.expectRevert(abi.encodeWithSelector(InvalidAmount.selector, 0));
         vm.deal(address(this), MINT_PRICE);
-        nft.mintBatchTo(alice, 0);
+        nft.mint(alice, 0);
         assertEq(nft.balanceOf(alice), 0);
 
         vm.expectRevert(abi.encodeWithSelector(InvalidAmount.selector, 0));
         vm.deal(alice, MINT_PRICE);
         vm.prank(alice);
-        nft.mintBatchTo(alice, 0);
+        nft.mint(alice, 0);
         assertEq(nft.balanceOf(alice), 0);
 
         vm.expectRevert(abi.encodeWithSelector(InvalidAmount.selector, MAX_SUPPLY + 1));
-        nft.mintBatchTo(alice, MAX_SUPPLY + 1);
+        nft.mint(alice, MAX_SUPPLY + 1);
         assertEq(nft.balanceOf(alice), 0);
 
         vm.expectRevert(abi.encodeWithSelector(InvalidAmount.selector, MAX_SUPPLY + 1));
         vm.prank(alice);
-        nft.mintBatchTo(alice, MAX_SUPPLY + 1);
+        nft.mint(alice, MAX_SUPPLY + 1);
         assertEq(nft.balanceOf(alice), 0);
 
         assertEq(nft.whitelistSpots(address(this)), 1);
@@ -320,14 +320,14 @@ contract BaseNFTTest is Test {
         vm.deal(address(this), MINT_PRICE * 3);
         nft.addWhitelistSpots(address(this), 3);
         vm.expectRevert("Pausable: paused");
-        nft.mintTo{ value: MINT_PRICE }(alice);
+        nft.mint{ value: MINT_PRICE }(alice, 1);
         assertEq(nft.balanceOf(alice), 0);
         vm.expectRevert("Pausable: paused");
-        nft.mintBatchTo{ value: MINT_PRICE * 3 }(alice, 3);
+        nft.mint{ value: MINT_PRICE * 3 }(alice, 3);
         assertEq(nft.balanceOf(alice), 0);
 
         nft.unpause();
-        nft.mintTo{ value: MINT_PRICE }(alice);
+        nft.mint{ value: MINT_PRICE }(alice, 1);
         assertEq(nft.balanceOf(alice), 1);
     }
 

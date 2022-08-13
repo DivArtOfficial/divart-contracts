@@ -2,8 +2,7 @@
 pragma solidity 0.8.14;
 
 import { RarityOracle } from "./interfaces/RarityOracle.sol";
-import { IERC721 } from "openzeppelin-contracts/contracts/interfaces/IERC721.sol";
-import { IERC721Enumerable } from "openzeppelin-contracts/contracts/interfaces/IERC721Enumerable.sol";
+import { IERC721AQueryable } from "ERC721A/extensions/ERC721AQueryable.sol";
 import { Ownable } from "openzeppelin-contracts/contracts/access/Ownable.sol";
 
 error NotInitialized();
@@ -120,19 +119,8 @@ contract DividendsTreasury is Ownable {
         newRound.endTimestamp = block.timestamp + durationInSeconds;
     }
 
-    function getAccountTokens(address account) public view returns (uint256[] memory) {
-        uint256 tokenCount = IERC721(buildingBlocksCollection).balanceOf(account);
-        uint256[] memory tokens = new uint256[](tokenCount);
-
-        for (uint256 i = 0; i < tokenCount; i++) {
-            tokens[i] = IERC721Enumerable(buildingBlocksCollection).tokenOfOwnerByIndex(account, i);
-        }
-
-        return tokens;
-    }
-
     function calculateDividendsForAccount(address account, uint256 roundIndex) public view returns (uint256) {
-        uint256[] memory tokens = getAccountTokens(account);
+        uint256[] memory tokens = IERC721AQueryable(buildingBlocksCollection).tokensOfOwner(account);
         uint256 totalDividends = 0;
 
         for (uint256 i = 0; i < tokens.length; i++) {
@@ -159,7 +147,7 @@ contract DividendsTreasury is Ownable {
             revert DividendsAlreadyClaimedForToken(tokenId);
         }
 
-        if (msg.sender != IERC721(buildingBlocksCollection).ownerOf(tokenId)) {
+        if (msg.sender != IERC721AQueryable(buildingBlocksCollection).ownerOf(tokenId)) {
             revert TokenNotOwnedByAccount();
         }
 
@@ -182,7 +170,7 @@ contract DividendsTreasury is Ownable {
 
     function claimDividends() public whenInitialized whenLastRoundIsOpen {
         uint256 roundIndex = _dividendsRounds.length - 1;
-        uint256[] memory tokens = getAccountTokens(msg.sender);
+        uint256[] memory tokens = IERC721AQueryable(buildingBlocksCollection).tokensOfOwner(msg.sender);
 
         for (uint256 i = 0; i < tokens.length; i++) {
             uint256 tokenId = tokens[i];
