@@ -49,3 +49,18 @@ restore-submodules:
             url=$(git config -f .gitmodules --get "$url_key")
             git submodule add $url $path
         done
+
+deploy-genesis:
+    #!/bin/sh
+
+    ls config.json >/dev/null 2>&1 || \
+    { echo -e "Missing config.json, you can use config.example.json as an example config file." && exit 1; }
+
+    forge script "script/DeployGenesis.s.sol" \
+    --rpc-url $RPC_NODE_URL \
+    --sender $SENDER_ADDRESS \
+    --keystores $KEYSTORE_PATH \
+    --slow \
+    --broadcast \
+    --with-gas-price 1000000000 \
+    -vvvv

@@ -1,0 +1,16 @@
+{
+    "31337": {
+        "buildingBlocks": {
+            "dividendsRoyaltyShares": 8,
+            "dividendsShareBasisPoints": 2000,
+            "maxSupply": 777,
+            "mintPrice": 1000000000000000000,
+            "name": "DivArt Building Blocks Collection",
+            "projectRoyaltyShares": 2,
+            "reservedSupply": 77,
+            "royaltyBasisPoints": 2000,
+            "symbol": "DIVARTBB"
+        },
+        "projectTreasury": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266"
+    }
+}
