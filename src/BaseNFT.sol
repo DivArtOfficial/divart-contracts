@@ -68,20 +68,18 @@ contract BaseNFT is ERC721Enumerable, ERC2981, Ownable, Pausable, Whitelistable,
         dividendsSharePerMint = (_mintPrice * _dividendsShareBasisPoints) / 1e4;
         projectSharePerMint = mintPrice - dividendsSharePerMint;
 
-        _addWhitelistSpots(msg.sender, _reservedSupply);
         for (uint256 i = 0; i < _reservedSupply; i++) {
             _mintTo(projectTreasury);
         }
     }
 
-    function _mintTo(address recipient) internal whenNotPaused onlyWhitelisted {
-        _removeWhitelistSpots(msg.sender, 1);
+    function _mintTo(address recipient) internal {
         uint256 tokenId = _tokenIdCounter.current();
         _tokenIdCounter.increment();
         _safeMint(recipient, tokenId);
     }
 
-    function mintTo(address recipient) public payable {
+    function mintTo(address recipient) public payable whenNotPaused onlyWhitelisted {
         if (msg.value < mintPrice) {
             revert MintPriceNotPaid();
         }
@@ -90,6 +88,7 @@ contract BaseNFT is ERC721Enumerable, ERC2981, Ownable, Pausable, Whitelistable,
             revert MaxSupplyReached();
         }
 
+        _removeWhitelistSpots(msg.sender, 1);
         _mintTo(recipient);
 
         (bool success, ) = address(dividendsTreasury).call{ value: dividendsSharePerMint }("");
@@ -109,7 +108,7 @@ contract BaseNFT is ERC721Enumerable, ERC2981, Ownable, Pausable, Whitelistable,
         }
     }
 
-    function mintBatchTo(address recipient, uint256 amount) public payable {
+    function mintBatchTo(address recipient, uint256 amount) public payable whenNotPaused onlyWhitelisted {
         if (amount == 0 || amount > maxSupply) {
             revert InvalidAmount(amount);
         }
@@ -123,6 +122,7 @@ contract BaseNFT is ERC721Enumerable, ERC2981, Ownable, Pausable, Whitelistable,
             revert MaxSupplyReached();
         }
 
+        _removeWhitelistSpots(msg.sender, amount);
         for (uint256 i = 0; i < amount; i++) {
             _mintTo(recipient);
         }

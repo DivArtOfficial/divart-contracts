@@ -92,6 +92,7 @@ contract BaseNFTTest is Test {
         vm.prank(alice);
         nft.mintTo{ value: MINT_PRICE }(alice);
         assertEq(nft.balanceOf(alice), 1);
+        assertEq(nft.whitelistSpots(alice), 0);
         assertEq(projectTreasury.balance, nft.projectSharePerMint());
         assertEq(dividendsTreasury.balance, nft.dividendsSharePerMint());
 
@@ -99,6 +100,7 @@ contract BaseNFTTest is Test {
         nft.addWhitelistSpots(address(this), 1);
         nft.mintTo{ value: MINT_PRICE }(alice);
         assertEq(nft.balanceOf(alice), 2);
+        assertEq(nft.whitelistSpots(address(this)), 0);
         assertEq(projectTreasury.balance, nft.projectSharePerMint() * 2);
         assertEq(dividendsTreasury.balance, nft.dividendsSharePerMint() * 2);
     }
@@ -109,6 +111,7 @@ contract BaseNFTTest is Test {
         vm.prank(alice);
         nft.mintTo{ value: MINT_PRICE * 2 }(alice);
         assertEq(nft.balanceOf(alice), 1);
+        assertEq(nft.whitelistSpots(alice), 1);
         assertEq(projectTreasury.balance, nft.projectSharePerMint());
         assertEq(dividendsTreasury.balance, nft.dividendsSharePerMint());
         assertEq(alice.balance, MINT_PRICE);
@@ -117,6 +120,7 @@ contract BaseNFTTest is Test {
         nft.addWhitelistSpots(address(this), 2);
         nft.mintTo{ value: MINT_PRICE * 2 }(alice);
         assertEq(nft.balanceOf(alice), 2);
+        assertEq(nft.whitelistSpots(address(this)), 1);
         assertEq(projectTreasury.balance, nft.projectSharePerMint() * 2);
         assertEq(dividendsTreasury.balance, nft.dividendsSharePerMint() * 2);
         assertEq(alice.balance, MINT_PRICE);
@@ -128,6 +132,7 @@ contract BaseNFTTest is Test {
         vm.expectRevert(MintPriceNotPaid.selector);
         nft.mintTo(alice);
         assertEq(nft.balanceOf(alice), 0);
+        assertEq(nft.whitelistSpots(alice), 1);
         assertEq(projectTreasury.balance, 0);
         assertEq(dividendsTreasury.balance, 0);
         assertEq(alice.balance, 0);
@@ -137,6 +142,7 @@ contract BaseNFTTest is Test {
         vm.expectRevert(MintPriceNotPaid.selector);
         nft.mintTo{ value: MINT_PRICE / 2 }(alice);
         assertEq(nft.balanceOf(alice), 0);
+        assertEq(nft.whitelistSpots(alice), 1);
         assertEq(projectTreasury.balance, 0);
         assertEq(dividendsTreasury.balance, 0);
         assertEq(alice.balance, MINT_PRICE / 2);
@@ -146,6 +152,7 @@ contract BaseNFTTest is Test {
         vm.expectRevert(MintPriceNotPaid.selector);
         nft.mintTo{ value: MINT_PRICE / 2 }(alice);
         assertEq(nft.balanceOf(alice), 0);
+        assertEq(nft.whitelistSpots(address(this)), 1);
         assertEq(projectTreasury.balance, 0);
         assertEq(dividendsTreasury.balance, 0);
         assertEq(address(this).balance, MINT_PRICE / 2);
@@ -158,8 +165,12 @@ contract BaseNFTTest is Test {
         for (uint256 i = 0; i < MINTABLE_SUPPLY; i++) {
             nft.mintTo{ value: MINT_PRICE }(alice);
         }
+        assertEq(nft.balanceOf(alice), MINTABLE_SUPPLY);
+        assertEq(nft.whitelistSpots(alice), 1);
         vm.expectRevert(MaxSupplyReached.selector);
         nft.mintTo{ value: MINT_PRICE }(alice);
+        assertEq(nft.balanceOf(alice), MINTABLE_SUPPLY);
+        assertEq(nft.whitelistSpots(alice), 1);
         vm.stopPrank();
 
         assertEq(nft.balanceOf(alice), MINTABLE_SUPPLY);
@@ -170,6 +181,7 @@ contract BaseNFTTest is Test {
         nft.addWhitelistSpots(address(this), 1);
         vm.expectRevert(MaxSupplyReached.selector);
         nft.mintTo{ value: MINT_PRICE }(alice);
+        assertEq(nft.whitelistSpots(address(this)), 1);
     }
 
     function testMintBatchToWithExactPayment(uint256 amount) public {
@@ -180,6 +192,7 @@ contract BaseNFTTest is Test {
         vm.prank(alice);
         nft.mintBatchTo{ value: MINT_PRICE * amount }(alice, amount);
         assertEq(nft.balanceOf(alice), amount);
+        assertEq(nft.whitelistSpots(alice), 0);
         assertEq(projectTreasury.balance, nft.projectSharePerMint() * amount);
         assertEq(dividendsTreasury.balance, nft.dividendsSharePerMint() * amount);
 
@@ -189,6 +202,7 @@ contract BaseNFTTest is Test {
         nft.addWhitelistSpots(address(this), amount);
         nft.mintBatchTo{ value: MINT_PRICE * amount }(alice, amount);
         assertEq(nft.balanceOf(alice), MINTABLE_SUPPLY);
+        assertEq(nft.whitelistSpots(address(this)), 0);
         assertEq(projectTreasury.balance, nft.projectSharePerMint() * MINTABLE_SUPPLY);
         assertEq(dividendsTreasury.balance, nft.dividendsSharePerMint() * MINTABLE_SUPPLY);
     }
@@ -203,6 +217,7 @@ contract BaseNFTTest is Test {
         vm.expectRevert(MintPriceNotPaid.selector);
         nft.mintBatchTo{ value: topUpAmount }(alice, amount);
         assertEq(nft.balanceOf(alice), 0);
+        assertEq(nft.whitelistSpots(alice), amount);
         assertEq(projectTreasury.balance, 0);
         assertEq(dividendsTreasury.balance, 0);
         assertEq(alice.balance, topUpAmount);
@@ -212,6 +227,7 @@ contract BaseNFTTest is Test {
         vm.expectRevert(MintPriceNotPaid.selector);
         nft.mintBatchTo{ value: topUpAmount }(alice, amount);
         assertEq(nft.balanceOf(alice), 0);
+        assertEq(nft.whitelistSpots(address(this)), amount);
         assertEq(projectTreasury.balance, 0);
         assertEq(dividendsTreasury.balance, 0);
         assertEq(address(this).balance, topUpAmount);
@@ -226,6 +242,7 @@ contract BaseNFTTest is Test {
         vm.prank(alice);
         nft.mintBatchTo{ value: topUpAmount }(alice, amount);
         assertEq(nft.balanceOf(alice), amount);
+        assertEq(nft.whitelistSpots(alice), 0);
         assertEq(projectTreasury.balance, nft.projectSharePerMint() * amount);
         assertEq(dividendsTreasury.balance, nft.dividendsSharePerMint() * amount);
         assertEq(alice.balance, topUpAmount / 2);
@@ -237,12 +254,16 @@ contract BaseNFTTest is Test {
         nft.addWhitelistSpots(address(this), amount);
         nft.mintBatchTo{ value: topUpAmount }(alice, amount);
         assertEq(nft.balanceOf(alice), MINTABLE_SUPPLY);
+        assertEq(nft.whitelistSpots(address(this)), 0);
         assertEq(projectTreasury.balance, nft.projectSharePerMint() * MINTABLE_SUPPLY);
         assertEq(dividendsTreasury.balance, nft.dividendsSharePerMint() * MINTABLE_SUPPLY);
         assertEq(address(this).balance, topUpAmount / 2);
     }
 
     function testMintBatchToInvalidAmount() public {
+        nft.addWhitelistSpots(address(this), 1);
+        nft.addWhitelistSpots(address(alice), 1);
+
         vm.expectRevert(abi.encodeWithSelector(InvalidAmount.selector, 0));
         nft.mintBatchTo(alice, 0);
         assertEq(nft.balanceOf(alice), 0);
@@ -271,6 +292,9 @@ contract BaseNFTTest is Test {
         vm.prank(alice);
         nft.mintBatchTo(alice, MAX_SUPPLY + 1);
         assertEq(nft.balanceOf(alice), 0);
+
+        assertEq(nft.whitelistSpots(address(this)), 1);
+        assertEq(nft.whitelistSpots(address(alice)), 1);
     }
 
     function testRevealMetadata() public {
