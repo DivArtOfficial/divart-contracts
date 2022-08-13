@@ -73,7 +73,11 @@ contract DividendsTreasury is Ownable {
         _;
     }
 
-    function initialize(address _buildingBlocksCollection, RarityOracle _rarityOracle) public whenNotInitialized {
+    function initialize(address _buildingBlocksCollection, RarityOracle _rarityOracle)
+        public
+        whenNotInitialized
+        onlyOwner
+    {
         buildingBlocksCollection = _buildingBlocksCollection;
         rarityOracle = _rarityOracle;
     }
@@ -189,7 +193,7 @@ contract DividendsTreasury is Ownable {
         }
     }
 
-    function terminateDividendsRound() public onlyOwner whenLastRoundIsOpen {
+    function terminateDividendsRound() public onlyOwner whenInitialized whenLastRoundIsOpen {
         _dividendsRounds[_dividendsRounds.length - 1].endTimestamp = block.timestamp;
     }
 
@@ -206,7 +210,7 @@ contract DividendsTreasury is Ownable {
         }
     }
 
-    function withdrawUnclaimed() public onlyOwner whenLastRoundIsClosed {
+    function withdrawUnclaimed() public onlyOwner whenInitialized whenLastRoundIsClosed {
         uint256 totalUnclaimed = address(this).balance - treasuryBalance;
 
         (bool success, ) = projectTreasury.call{ value: totalUnclaimed }("");
@@ -215,7 +219,7 @@ contract DividendsTreasury is Ownable {
         }
     }
 
-    function waiveUnclaimed() public onlyOwner whenLastRoundIsClosed {
+    function waiveUnclaimed() public onlyOwner whenInitialized whenLastRoundIsClosed {
         treasuryBalance = address(this).balance;
     }
 
