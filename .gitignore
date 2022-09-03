@@ -15,8 +15,6 @@ deployments/contracts.json
 .env.*
 !.env.example
 
-config.json
-
 .vscode/
 
 flattened.txt

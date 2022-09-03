@@ -1,0 +1,44 @@
+{
+    "31337": {
+        "buildingBlocks": {
+            "dividendsRoyaltyShares": 8,
+            "dividendsShareBasisPoints": 2000,
+            "maxSupply": 777,
+            "mintPrice": 12000000000000000000,
+            "name": "DivArt Building Blocks Collection",
+            "projectRoyaltyShares": 2,
+            "reservedSupply": 77,
+            "royaltyBasisPoints": 2000,
+            "symbol": "DIVARTBB"
+        },
+        "projectTreasury": "0xA2a8707AAACf1c5651A5FCD547B1F454AF2fb63D"
+    },
+    "321": {
+        "buildingBlocks": {
+            "dividendsRoyaltyShares": 8,
+            "dividendsShareBasisPoints": 2000,
+            "maxSupply": 777,
+            "mintPrice": 12000000000000000000,
+            "name": "DivArt Building Blocks Collection",
+            "projectRoyaltyShares": 2,
+            "reservedSupply": 77,
+            "royaltyBasisPoints": 2000,
+            "symbol": "DIVARTBB"
+        },
+        "projectTreasury": "0x078F778c631cf274B8FBD57a8d72B8273A49F7ee"
+    },
+    "322": {
+        "buildingBlocks": {
+            "dividendsRoyaltyShares": 8,
+            "dividendsShareBasisPoints": 2000,
+            "maxSupply": 777,
+            "mintPrice": 100000000000000000,
+            "name": "Test Building Blocks Collection",
+            "projectRoyaltyShares": 2,
+            "reservedSupply": 77,
+            "royaltyBasisPoints": 2000,
+            "symbol": "TESTBB"
+        },
+        "projectTreasury": "0xA2a8707AAACf1c5651A5FCD547B1F454AF2fb63D"
+    }
+}
