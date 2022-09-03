@@ -1,6 +1,6 @@
 set dotenv-load
 
-all: install update test
+all: install build
 
 install:
     forge install

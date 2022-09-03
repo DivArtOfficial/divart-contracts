@@ -14,8 +14,8 @@ jobs:
         with:
           version: nightly
       - name: Install NPM Dependencies
-        run: yarn
+        run: npm ci
       - name: Install Foundry Modules
-        run: yarn sync
+        run: npm run install
       - name: Run Tests
-        run: FOUNDRY_PROFILE=ci yarn test
+        run: FOUNDRY_PROFILE=ci npm run test

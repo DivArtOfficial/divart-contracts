@@ -15,9 +15,9 @@ jobs:
         with:
           version: nightly
 
-      - name: Install Dependencies
-        run: yarn
-      - name: Update Modules
-        run: yarn sync
+      - name: Install NPM Dependencies
+        run: npm ci
+      - name: Install Foundry Modules
+        run: npm run install
       - name: Run lints
-        run: yarn lint
+        run: npm run format
