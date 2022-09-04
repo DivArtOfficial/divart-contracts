@@ -62,5 +62,6 @@ deploy-genesis:
     --keystores $KEYSTORE_PATH \
     --slow \
     --broadcast \
+    --legacy \
     --with-gas-price 1000000000 \
     -vvvv
