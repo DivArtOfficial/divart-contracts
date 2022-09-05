@@ -3,13 +3,16 @@
         "buildingBlocks": {
             "dividendsRoyaltyShares": 8,
             "dividendsShareBasisPoints": 2000,
+            "exclusiveWhitelistMintPrice": 12000000000000000000,
             "maxSupply": 777,
-            "mintPrice": 12000000000000000000,
+            "mintingStartTimestamp": 1663417800,
             "name": "DivArt Building Blocks Collection",
             "projectRoyaltyShares": 2,
-            "reservedSupply": 77,
+            "publicMintPrice": 12000000000000000000,
+            "reservedSupply": 7,
             "royaltyBasisPoints": 2000,
-            "symbol": "DIVARTBB"
+            "symbol": "DIVARTBB",
+            "whitelistMintPrice": 10000000000000000000
         },
         "projectTreasury": "0xA2a8707AAACf1c5651A5FCD547B1F454AF2fb63D"
     },
@@ -17,13 +20,16 @@
         "buildingBlocks": {
             "dividendsRoyaltyShares": 8,
             "dividendsShareBasisPoints": 2000,
+            "exclusiveWhitelistMintPrice": 12000000000000000000,
             "maxSupply": 777,
-            "mintPrice": 12000000000000000000,
+            "mintingStartTimestamp": 1663417800,
             "name": "DivArt Building Blocks Collection",
             "projectRoyaltyShares": 2,
-            "reservedSupply": 77,
+            "publicMintPrice": 12000000000000000000,
+            "reservedSupply": 7,
             "royaltyBasisPoints": 2000,
-            "symbol": "DIVARTBB"
+            "symbol": "DIVARTBB",
+            "whitelistMintPrice": 10000000000000000000
         },
         "projectTreasury": "0x078F778c631cf274B8FBD57a8d72B8273A49F7ee"
     },
@@ -31,13 +37,16 @@
         "buildingBlocks": {
             "dividendsRoyaltyShares": 8,
             "dividendsShareBasisPoints": 2000,
+            "exclusiveWhitelistMintPrice": 100000000000000000,
             "maxSupply": 777,
-            "mintPrice": 100000000000000000,
+            "mintingStartTimestamp": 1663417800,
             "name": "Test Building Blocks Collection",
             "projectRoyaltyShares": 2,
-            "reservedSupply": 77,
+            "publicMintPrice": 100000000000000000,
+            "reservedSupply": 7,
             "royaltyBasisPoints": 2000,
-            "symbol": "TESTBB"
+            "symbol": "TESTBB",
+            "whitelistMintPrice": 90000000000000000
         },
         "projectTreasury": "0xA2a8707AAACf1c5651A5FCD547B1F454AF2fb63D"
     }

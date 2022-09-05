@@ -8,7 +8,9 @@ contract BuildingBlocksNFTTest is Test {
     uint256 constant MAX_SUPPLY = 10;
     uint256 constant RESERVED_SUPPLY = 0;
     uint256 constant MINTABLE_SUPPLY = MAX_SUPPLY - RESERVED_SUPPLY;
-    uint256 constant MINT_PRICE = 0.08 ether;
+    uint256 constant EXCLUSIVE_WHITELIST_MINT_PRICE = 0.08 ether;
+    uint256 constant WHITELIST_MINT_PRICE = 0.09 ether;
+    uint256 constant PUBLIC_MINT_PRICE = 0.1 ether;
     uint256 constant DIVIDENDS_SHARE_BP = 1000;
     uint96 constant ROYALTY_BP = 2e3;
     uint256 constant DIVIDENDS_ROYALTY_SHARES = 8;
@@ -22,17 +24,22 @@ contract BuildingBlocksNFTTest is Test {
 
     function setUp() public {
         nft = new BuildingBlocksNFT(
-            "name",
-            "symbol",
-            MAX_SUPPLY,
-            RESERVED_SUPPLY,
-            MINT_PRICE,
-            dividendsTreasury,
-            projectTreasury,
-            DIVIDENDS_SHARE_BP,
-            ROYALTY_BP,
-            DIVIDENDS_ROYALTY_SHARES,
-            PROJECT_ROYALTY_SHARES
+            BuildingBlocksNFT.BuildingBlocksConfig({
+                name: "name",
+                symbol: "symbol",
+                maxSupply: MAX_SUPPLY,
+                reservedSupply: RESERVED_SUPPLY,
+                exclusiveWhitelistMintPrice: EXCLUSIVE_WHITELIST_MINT_PRICE,
+                whitelistMintPrice: WHITELIST_MINT_PRICE,
+                publicMintPrice: PUBLIC_MINT_PRICE,
+                dividendsTreasury: dividendsTreasury,
+                projectTreasury: projectTreasury,
+                dividendsShareBasisPoints: DIVIDENDS_SHARE_BP,
+                royaltyBasisPoints: ROYALTY_BP,
+                dividendsRoyaltyShares: DIVIDENDS_ROYALTY_SHARES,
+                projectRoyaltyShares: PROJECT_ROYALTY_SHARES,
+                mintingStartTimestamp: block.timestamp
+            })
         );
 
         vm.label(address(this), "Owner");

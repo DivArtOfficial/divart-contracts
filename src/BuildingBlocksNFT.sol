@@ -9,46 +9,54 @@ error RaritiesLengthMismatch();
 error NonExistentTokenId(uint256 tokenId);
 
 contract BuildingBlocksNFT is BaseNFT, RarityOracle {
+    struct BuildingBlocksConfig {
+        string name;
+        string symbol;
+        uint256 maxSupply;
+        uint256 reservedSupply;
+        uint256 exclusiveWhitelistMintPrice;
+        uint256 whitelistMintPrice;
+        uint256 publicMintPrice;
+        address dividendsTreasury;
+        address projectTreasury;
+        uint256 dividendsShareBasisPoints;
+        uint256 mintingStartTimestamp;
+        uint96 royaltyBasisPoints;
+        uint256 dividendsRoyaltyShares;
+        uint256 projectRoyaltyShares;
+    }
+
     PaymentSplitter public immutable PAYMENT_SPLITTER;
 
     uint256[] private _rarities;
     uint256 private _raritiesSum;
 
-    constructor(
-        string memory _name,
-        string memory _symbol,
-        uint256 _maxSupply,
-        uint256 _reservedSupply,
-        uint256 _mintPrice,
-        address _dividendsTreasury,
-        address _projectTreasury,
-        uint256 _dividendsShareBasisPoints,
-        uint96 _royaltyBasisPoints,
-        uint256 _dividendsRoyaltyShares,
-        uint256 _projectRoyaltyShares
-    )
+    constructor(BuildingBlocksConfig memory config)
         BaseNFT(
-            _name,
-            _symbol,
-            _maxSupply,
-            _reservedSupply,
-            _mintPrice,
-            _dividendsTreasury,
-            _projectTreasury,
-            _dividendsShareBasisPoints
+            config.name,
+            config.symbol,
+            config.maxSupply,
+            config.reservedSupply,
+            config.exclusiveWhitelistMintPrice,
+            config.whitelistMintPrice,
+            config.publicMintPrice,
+            config.dividendsTreasury,
+            config.projectTreasury,
+            config.dividendsShareBasisPoints,
+            config.mintingStartTimestamp
         )
     {
         address[] memory _payees = new address[](2);
         uint256[] memory _shares = new uint256[](2);
 
-        _payees[0] = _dividendsTreasury;
-        _shares[0] = _dividendsRoyaltyShares;
+        _payees[0] = config.dividendsTreasury;
+        _shares[0] = config.dividendsRoyaltyShares;
 
-        _payees[1] = _projectTreasury;
-        _shares[1] = _projectRoyaltyShares;
+        _payees[1] = config.projectTreasury;
+        _shares[1] = config.projectRoyaltyShares;
 
         PAYMENT_SPLITTER = new PaymentSplitter(_payees, _shares);
-        super._setDefaultRoyalty(address(PAYMENT_SPLITTER), _royaltyBasisPoints);
+        super._setDefaultRoyalty(address(PAYMENT_SPLITTER), config.royaltyBasisPoints);
     }
 
     function revealRarities(uint256[] calldata rarities) public onlyOwner {

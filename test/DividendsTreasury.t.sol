@@ -10,7 +10,9 @@ contract DividendsTreasuryTest is Test {
     uint256 constant MAX_SUPPLY = 10;
     uint256 constant RESERVED_SUPPLY = 0;
     uint256 constant MINTABLE_SUPPLY = MAX_SUPPLY - RESERVED_SUPPLY;
-    uint256 constant MINT_PRICE = 0.08 ether;
+    uint256 constant EXCLUSIVE_WHITELIST_MINT_PRICE = 0.08 ether;
+    uint256 constant WHITELIST_MINT_PRICE = 0.09 ether;
+    uint256 constant PUBLIC_MINT_PRICE = 0.1 ether;
     uint256 constant DIVIDENDS_SHARE_BP = 1e3;
     uint96 constant ROYALTY_BP = 2e3;
     uint256 constant DIVIDENDS_ROYALTY_SHARES = 8;
@@ -34,41 +36,47 @@ contract DividendsTreasuryTest is Test {
         dividendsTreasury = new DividendsTreasury(projectTreasury);
 
         buildingBlocksNFT = new BuildingBlocksNFT(
-            "name",
-            "symbol",
-            MAX_SUPPLY,
-            RESERVED_SUPPLY,
-            MINT_PRICE,
-            address(dividendsTreasury),
-            projectTreasury,
-            DIVIDENDS_SHARE_BP,
-            ROYALTY_BP,
-            DIVIDENDS_ROYALTY_SHARES,
-            PROJECT_ROYALTY_SHARES
+            BuildingBlocksNFT.BuildingBlocksConfig({
+                name: "name",
+                symbol: "symbol",
+                maxSupply: MAX_SUPPLY,
+                reservedSupply: RESERVED_SUPPLY,
+                exclusiveWhitelistMintPrice: EXCLUSIVE_WHITELIST_MINT_PRICE,
+                whitelistMintPrice: WHITELIST_MINT_PRICE,
+                publicMintPrice: PUBLIC_MINT_PRICE,
+                dividendsTreasury: address(dividendsTreasury),
+                projectTreasury: projectTreasury,
+                dividendsShareBasisPoints: DIVIDENDS_SHARE_BP,
+                royaltyBasisPoints: ROYALTY_BP,
+                dividendsRoyaltyShares: DIVIDENDS_ROYALTY_SHARES,
+                projectRoyaltyShares: PROJECT_ROYALTY_SHARES,
+                mintingStartTimestamp: block.timestamp + 1
+            })
         );
 
         dividendsTreasury.initialize((address(buildingBlocksNFT)), buildingBlocksNFT);
 
-        vm.deal(address(this), MINT_PRICE * MINTABLE_SUPPLY);
         buildingBlocksNFT.addWhitelistSpots(address(this), MINTABLE_SUPPLY);
+        vm.warp(block.timestamp + 1 + 1 days);
         uint256 aliceAmount = MINTABLE_SUPPLY / 2;
-        buildingBlocksNFT.mint{ value: MINT_PRICE * aliceAmount }(alice, aliceAmount);
+        buildingBlocksNFT.whitelistMint{ value: WHITELIST_MINT_PRICE * aliceAmount }(alice, aliceAmount);
         uint256 bobAmount = (MINTABLE_SUPPLY + 1) / 2;
-        buildingBlocksNFT.mint{ value: MINT_PRICE * bobAmount }(bob, bobAmount);
+        buildingBlocksNFT.whitelistMint{ value: WHITELIST_MINT_PRICE * bobAmount }(bob, bobAmount);
 
         uint256[] memory rarities = new uint256[](MAX_SUPPLY);
         for (uint256 i = 0; i < MAX_SUPPLY; i++) {
             rarities[i] = 1;
         }
         buildingBlocksNFT.revealRarities(rarities);
+
+        vm.deal(address(this), 1000 ether);
     }
 
     function testReceiveFunds() public {
-        uint256 initialBalance = MAX_SUPPLY * buildingBlocksNFT.dividendsSharePerMint();
+        uint256 initialBalance = MAX_SUPPLY * buildingBlocksNFT.dividendsSharePerWhitelistMint();
         assertEq(address(dividendsTreasury).balance, initialBalance);
         assertEq(dividendsTreasury.treasuryBalance(), initialBalance);
 
-        vm.deal(address(this), 1 ether);
         (bool success, ) = address(dividendsTreasury).call{ value: 1 ether }("");
         assertTrue(success);
         assertEq(address(dividendsTreasury).balance, initialBalance + 1 ether);

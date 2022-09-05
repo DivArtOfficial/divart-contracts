@@ -18,13 +18,16 @@ contract DeployGenesis is Test {
     struct BuildingBlocksConfig {
         uint256 dividendsRoyaltyShares;
         uint256 dividendsShareBasisPoints;
+        uint256 exclusiveWhitelistMintPrice;
         uint256 maxSupply;
-        uint256 mintPrice;
+        uint256 mintingStartTimestamp;
         string name;
         uint256 projectRoyaltyShares;
+        uint256 publicMintPrice;
         uint256 reservedSupply;
         uint96 royaltyBasisPoints;
         string symbol;
+        uint256 whitelistMintPrice;
     }
 
     struct Config {
@@ -50,17 +53,22 @@ contract DeployGenesis is Test {
         DividendsTreasury dividendsTreasury = new DividendsTreasury(config.projectTreasury);
 
         BuildingBlocksNFT buildingBlocksNFT = new BuildingBlocksNFT(
-            config.buildingBlocks.name,
-            config.buildingBlocks.symbol,
-            config.buildingBlocks.maxSupply,
-            config.buildingBlocks.reservedSupply,
-            config.buildingBlocks.mintPrice,
-            address(dividendsTreasury),
-            config.projectTreasury,
-            config.buildingBlocks.dividendsShareBasisPoints,
-            config.buildingBlocks.royaltyBasisPoints,
-            config.buildingBlocks.dividendsRoyaltyShares,
-            config.buildingBlocks.projectRoyaltyShares
+            BuildingBlocksNFT.BuildingBlocksConfig({
+                name: config.buildingBlocks.name,
+                symbol: config.buildingBlocks.symbol,
+                maxSupply: config.buildingBlocks.maxSupply,
+                reservedSupply: config.buildingBlocks.reservedSupply,
+                exclusiveWhitelistMintPrice: config.buildingBlocks.exclusiveWhitelistMintPrice,
+                whitelistMintPrice: config.buildingBlocks.whitelistMintPrice,
+                publicMintPrice: config.buildingBlocks.publicMintPrice,
+                dividendsTreasury: address(dividendsTreasury),
+                projectTreasury: config.projectTreasury,
+                dividendsShareBasisPoints: config.buildingBlocks.dividendsShareBasisPoints,
+                royaltyBasisPoints: config.buildingBlocks.royaltyBasisPoints,
+                dividendsRoyaltyShares: config.buildingBlocks.dividendsRoyaltyShares,
+                projectRoyaltyShares: config.buildingBlocks.projectRoyaltyShares,
+                mintingStartTimestamp: config.buildingBlocks.mintingStartTimestamp
+            })
         );
 
         dividendsTreasury.initialize(address(buildingBlocksNFT), RarityOracle(buildingBlocksNFT));
